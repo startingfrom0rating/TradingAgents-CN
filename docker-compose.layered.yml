@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Streamlit Web 应用服务（分层构建版）
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile.app
+    image: tradingagents-cn:v0.1.8-layered
+    container_name: TradingAgents-web-layered
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - .env:/app/.env
+      - ./.streamlit:/app/.streamlit
+    env_file:
+      - .env
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      # PDF导出配置
+      DISPLAY: ":99"
+      QT_QPA_PLATFORM: "offscreen"
+      # Streamlit配置
+      STREAMLIT_SERVER_HEADLESS: true
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: false
+      STREAMLIT_GLOBAL_DEVELOPMENT_MODE: false
+      STREAMLIT_UI_HIDE_TOP_BAR: true
+      STREAMLIT_UI_EMAIL_TO_COLLECT: ""
+      # Docker专用数据库配置（覆盖.env中的本地配置）
+      TRADINGAGENTS_MONGODB_URL: mongodb://admin:tradingagents123@mongodb:27017/tradingagents?authSource=admin
+      TRADINGAGENTS_REDIS_URL: redis://:tradingagents123@redis:6379
+      TRADINGAGENTS_CACHE_TYPE: redis
+      # Docker环境标识
+      DOCKER_CONTAINER: "true"
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - tradingagents-network
+
+  # MongoDB 数据库服务
+  mongodb:
+    image: mongo:4.4
+    container_name: tradingagents-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: tradingagents123
+      MONGO_INITDB_DATABASE: tradingagents
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - tradingagents-network
+
+  # Redis 缓存服务
+  redis:
+    image: redis:alpine
+    container_name: tradingagents-redis
+    restart: unless-stopped
+    command: redis-server --requirepass tradingagents123
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - tradingagents-network
+
+  # Redis Commander 管理界面
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: tradingagents-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:tradingagents123
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - tradingagents-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  tradingagents-network:
+    driver: bridge

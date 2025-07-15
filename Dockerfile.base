@@ -1,0 +1,51 @@
+# TradingAgents-CN 基础镜像
+# 包含系统依赖和Python环境，不包含字体（字体在应用层安装）
+FROM ghcr.io/astral-sh/uv:python3.10-bookworm
+
+LABEL maintainer="TradingAgents-CN Team"
+LABEL description="TradingAgents-CN基础镜像，包含系统依赖和Python环境"
+LABEL version="0.1.8-base"
+
+WORKDIR /app
+
+RUN mkdir -p /app/data /app/logs
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# 配置阿里云软件源
+RUN echo 'deb http://mirrors.aliyun.com/debian/ bookworm main' > /etc/apt/sources.list && \
+    echo 'deb-src http://mirrors.aliyun.com/debian/ bookworm main' >> /etc/apt/sources.list && \
+    echo 'deb http://mirrors.aliyun.com/debian/ bookworm-updates main' >> /etc/apt/sources.list && \
+    echo 'deb-src http://mirrors.aliyun.com/debian/ bookworm-updates main' >> /etc/apt/sources.list && \
+    echo 'deb http://mirrors.aliyun.com/debian-security bookworm-security main' >> /etc/apt/sources.list && \
+    echo 'deb-src http://mirrors.aliyun.com/debian-security bookworm-security main' >> /etc/apt/sources.list
+
+# 安装系统依赖（不包含字体）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    wkhtmltopdf \
+    xvfb \
+    pandoc \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建Xvfb启动脚本（用于PDF导出）
+RUN echo '#!/bin/bash\nXvfb :99 -screen 0 1024x768x24 -ac +extension GLX &\nexport DISPLAY=:99\nexec "$@"' > /usr/local/bin/start-xvfb.sh \
+    && chmod +x /usr/local/bin/start-xvfb.sh
+
+# 复制依赖文件
+COPY requirements.txt .
+
+# 安装Python依赖
+RUN pip install --no-cache-dir -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple && \
+    pip install --no-cache-dir pytdx -i https://mirrors.aliyun.com/pypi/simple
+
+# 设置PDF导出环境变量
+ENV DISPLAY=:99 \
+    QT_QPA_PLATFORM=offscreen
+
+# 暴露端口
+EXPOSE 8501
+
+# 默认命令
+CMD ["python", "--version"]

@@ -1,42 +1,23 @@
-FROM ghcr.io/astral-sh/uv:python3.10-bookworm
+# TradingAgents-CN 应用镜像
+# 基于基础镜像，添加字体和项目文件
+FROM tradingagents-cn-base:0.1.8-base
 
-WORKDIR /app
+LABEL maintainer="TradingAgents-CN Team"
+LABEL description="TradingAgents-CN应用镜像，包含完整功能"
+LABEL version="0.1.8"
 
-RUN mkdir -p /app/data /app/logs
-
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
-
-RUN echo 'deb http://mirrors.aliyun.com/debian/ bookworm main' > /etc/apt/sources.list && \
-    echo 'deb-src http://mirrors.aliyun.com/debian/ bookworm main' >> /etc/apt/sources.list && \
-    echo 'deb http://mirrors.aliyun.com/debian/ bookworm-updates main' >> /etc/apt/sources.list && \
-    echo 'deb-src http://mirrors.aliyun.com/debian/ bookworm-updates main' >> /etc/apt/sources.list && \
-    echo 'deb http://mirrors.aliyun.com/debian-security bookworm-security main' >> /etc/apt/sources.list && \
-    echo 'deb-src http://mirrors.aliyun.com/debian-security bookworm-security main' >> /etc/apt/sources.list
-
+# 安装中文字体和时区数据（在应用层安装确保生效）
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    wkhtmltopdf \
-    xvfb \
     fonts-wqy-zenhei \
     fonts-wqy-microhei \
     fonts-liberation \
-    pandoc \
-    procps \
     tzdata \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && fc-cache -fv
 
 # 设置中国时区
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# 启动Xvfb虚拟显示器
-RUN echo '#!/bin/bash\nXvfb :99 -screen 0 1024x768x24 -ac +extension GLX &\nexport DISPLAY=:99\nexec "$@"' > /usr/local/bin/start-xvfb.sh \
-    && chmod +x /usr/local/bin/start-xvfb.sh
-
-COPY requirements.txt .
-
-RUN pip install --no-cache-dir -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 
 # 创建Streamlit配置目录和配置文件
 RUN mkdir -p /app/.streamlit
@@ -78,8 +59,8 @@ hideSidebarNav = false' > /app/.streamlit/config.toml
 RUN echo '[general]\n\
 email = ""' > /app/.streamlit/credentials.toml
 
+# 复制项目文件
 COPY . .
 
-EXPOSE 8501
-
+# 使用Xvfb启动脚本运行Streamlit，禁用邮箱收集
 CMD ["/usr/local/bin/start-xvfb.sh", "python", "-m", "streamlit", "run", "web/app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.headless=true", "--browser.gatherUsageStats=false"]
