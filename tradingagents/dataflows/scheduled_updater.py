@@ -13,9 +13,9 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from ..utils.logging_manager import get_logger
-from .data_source_manager import DataSourceManager
-from ..config.mongodb_storage import MongoDBStorage
-from .cache_manager import CacheManager
+from .unified_data_source_manager import UnifiedDataSourceManager
+from .mongodb_data_storage import MongoDBDataStorage
+from .redis_cache_manager import RedisCacheManager
 
 logger = get_logger(__name__)
 
@@ -24,9 +24,9 @@ class ScheduledDataUpdater:
     
     def __init__(self):
         self.scheduler = AsyncIOScheduler()
-        self.mongodb = MongoDBStorage()
-        self.data_sources = DataSourceManager()
-        self.cache = CacheManager()
+        self.mongodb = MongoDBDataStorage()
+        self.data_sources = UnifiedDataSourceManager()
+        self.cache = RedisCacheManager()
         self.is_running = False
         
         # 更新统计

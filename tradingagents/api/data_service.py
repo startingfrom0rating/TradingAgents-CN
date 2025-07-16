@@ -13,9 +13,9 @@ from pydantic import BaseModel, Field
 import uvicorn
 
 from ..utils.logging_manager import get_logger
-from ..dataflows.mongodb_storage import MongoDBDataStorage
-from ..dataflows.cache_manager import CacheManager
-from ..dataflows.data_source_manager import DataSourceManager
+from ..dataflows.mongodb_data_storage import MongoDBDataStorage
+from ..dataflows.redis_cache_manager import RedisCacheManager
+from ..dataflows.unified_data_source_manager import UnifiedDataSourceManager
 from ..dataflows.scheduled_updater import scheduled_updater
 from ..dataflows.priority_manager import priority_manager
 
@@ -76,8 +76,8 @@ class DataServiceAPI:
         )
         
         self.mongodb = MongoDBDataStorage()
-        self.cache = CacheManager()
-        self.data_sources = DataSourceManager()
+        self.cache = RedisCacheManager()
+        self.data_sources = UnifiedDataSourceManager()
         
         self.setup_routes()
     

@@ -12,8 +12,8 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 
 from ..utils.logging_manager import get_logger
-from .mongodb_storage import MongoDBDataStorage
-from .cache_manager import CacheManager
+from .mongodb_data_storage import MongoDBDataStorage
+from .redis_cache_manager import RedisCacheManager
 
 logger = get_logger(__name__)
 
@@ -62,7 +62,7 @@ class DataSourcePriorityManager:
     
     def __init__(self):
         self.mongodb = MongoDBDataStorage()
-        self.cache = CacheManager()
+        self.cache = RedisCacheManager()
         self.config_cache: Dict[str, PriorityRule] = {}
         self.ab_test_configs: Dict[str, Dict] = {}
         
