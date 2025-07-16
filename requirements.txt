@@ -21,6 +21,12 @@ requests
 tqdm
 pytz
 redis
+aioredis
+motor
+pymongo
+apscheduler
+fastapi
+uvicorn
 chainlit
 rich
 questionary
