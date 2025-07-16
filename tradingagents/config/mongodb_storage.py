@@ -30,8 +30,8 @@ class MongoDBStorage:
         if not MONGODB_AVAILABLE:
             raise ImportError("pymongo is not installed. Please install it with: pip install pymongo")
         
-        # 修复硬编码问题 - 如果没有提供连接字符串且环境变量也未设置，则抛出错误
-        self.connection_string = connection_string or os.getenv("MONGODB_CONNECTION_STRING")
+        # 修复硬编码问题 - 从环境变量构建连接字符串
+        self.connection_string = connection_string or self._get_connection_string()
         if not self.connection_string:
             raise ValueError(
                 "MongoDB连接字符串未配置。请通过以下方式之一进行配置：\n"
@@ -47,6 +47,31 @@ class MongoDBStorage:
         self.db = None
         self.collection = None
         self._connected = False
+
+    def _get_connection_string(self) -> str:
+        """从环境变量构建MongoDB连接字符串"""
+        # 直接从MONGODB_CONNECTION_STRING获取
+        connection_string = os.getenv("MONGODB_CONNECTION_STRING")
+        if connection_string:
+            return connection_string
+
+        # 检查MongoDB是否启用
+        mongodb_enabled = os.getenv('MONGODB_ENABLED', 'false').lower() == 'true'
+        if not mongodb_enabled:
+            return None
+
+        # 从分离的环境变量构建
+        host = os.getenv('MONGODB_HOST', 'localhost')
+        port = int(os.getenv('MONGODB_PORT', 27017))
+        username = os.getenv('MONGODB_USERNAME')
+        password = os.getenv('MONGODB_PASSWORD')
+        database = os.getenv('MONGODB_DATABASE', 'tradingagents')
+        auth_source = os.getenv('MONGODB_AUTH_SOURCE', 'admin')
+
+        if username and password:
+            return f"mongodb://{username}:{password}@{host}:{port}/{database}?authSource={auth_source}"
+        else:
+            return f"mongodb://{host}:{port}/{database}"
         
         # 尝试连接
         self._connect()

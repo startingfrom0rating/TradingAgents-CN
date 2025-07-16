@@ -71,14 +71,17 @@ class RedisCacheManager:
         """获取缓存数据"""
         try:
             config = self.get_cache_config(key)
-            
+
             if config.storage_type == "memory":
                 return await self._get_from_memory(key)
             elif config.storage_type == "redis":
+                # 如果Redis不可用，降级到内存缓存
+                if not self.redis_storage.is_connected:
+                    return await self._get_from_memory(key)
                 return await self._get_from_redis(key, config)
             else:
                 return await self._get_from_file(key, config)
-                
+
         except Exception as e:
             logger.error(f"Failed to get cache for key {key}: {e}")
             return None
@@ -89,14 +92,17 @@ class RedisCacheManager:
             config = self.get_cache_config(key)
             if ttl is not None:
                 config.ttl = ttl
-            
+
             if config.storage_type == "memory":
                 return await self._set_to_memory(key, value, config)
             elif config.storage_type == "redis":
+                # 如果Redis不可用，降级到内存缓存
+                if not self.redis_storage.is_connected:
+                    return await self._set_to_memory(key, value, config)
                 return await self._set_to_redis(key, value, config)
             else:
                 return await self._set_to_file(key, value, config)
-                
+
         except Exception as e:
             logger.error(f"Failed to set cache for key {key}: {e}")
             return False

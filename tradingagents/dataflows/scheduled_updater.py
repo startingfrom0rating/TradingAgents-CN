@@ -321,14 +321,30 @@ class ScheduledDataUpdater:
     
     def get_update_status(self) -> Dict[str, Any]:
         """获取更新状态"""
-        return {
-            "is_running": self.is_running,
-            "stats": self.update_stats.copy(),
-            "next_runs": {
-                job.id: job.next_run_time.isoformat() if job.next_run_time else None
-                for job in self.scheduler.get_jobs()
+        try:
+            next_runs = {}
+            for job in self.scheduler.get_jobs():
+                try:
+                    if hasattr(job, 'next_run_time') and job.next_run_time:
+                        next_runs[job.id] = job.next_run_time.isoformat()
+                    else:
+                        next_runs[job.id] = None
+                except Exception as e:
+                    logger.debug(f"Failed to get next_run_time for job {job.id}: {e}")
+                    next_runs[job.id] = "未知"
+
+            return {
+                "is_running": self.is_running,
+                "stats": self.update_stats.copy(),
+                "next_runs": next_runs
             }
-        }
+        except Exception as e:
+            logger.error(f"Failed to get update status: {e}")
+            return {
+                "is_running": self.is_running,
+                "stats": self.update_stats.copy(),
+                "next_runs": {}
+            }
 
 # 全局实例
 scheduled_updater = ScheduledDataUpdater()
