@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # MongoDB数据库
+  mongodb:
+    image: mongo:7.0
+    container_name: tradingagents-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: tradingagents123
+      MONGO_INITDB_DATABASE: tradingagents
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - tradingagents-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis缓存
+  redis:
+    image: redis:7.2-alpine
+    container_name: tradingagents-redis
+    restart: unless-stopped
+    command: redis-server --requirepass tradingagents123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tradingagents-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 数据源微服务
+  data-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.data-service
+    container_name: tradingagents-data-service
+    restart: unless-stopped
+    environment:
+      # 数据库配置
+      MONGODB_ENABLED: "true"
+      MONGODB_HOST: mongodb
+      MONGODB_PORT: 27017
+      MONGODB_USERNAME: admin
+      MONGODB_PASSWORD: tradingagents123
+      MONGODB_DATABASE: tradingagents
+      MONGODB_AUTH_SOURCE: admin
+      
+      # Redis配置
+      REDIS_ENABLED: "true"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: tradingagents123
+      REDIS_DB: 0
+      
+      # 服务配置
+      DATA_SERVICE_HOST: 0.0.0.0
+      DATA_SERVICE_PORT: 8001
+      DATA_SERVICE_WORKERS: 2
+      
+      # API密钥 (从.env文件读取)
+      TUSHARE_TOKEN: ${TUSHARE_TOKEN}
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
+      
+      # 日志配置
+      TRADINGAGENTS_LOG_LEVEL: INFO
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - tradingagents-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx反向代理 (可选)
+  nginx:
+    image: nginx:alpine
+    container_name: tradingagents-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - tradingagents-network
+    depends_on:
+      - data-service
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  tradingagents-network:
+    driver: bridge
