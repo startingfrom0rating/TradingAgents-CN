@@ -1,112 +1,112 @@
 #!/usr/bin/env python3
 """
-测试Web配置管理页面
+Test the web config management pages
 """
 
 import sys
 from pathlib import Path
 
-# 添加项目根目录到Python路径
+# Add project root to Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 def test_config_page_import():
-    """测试配置页面导入"""
-    print("🧪 测试配置管理页面导入")
+    """Test importing the config management page"""
+    print("🧪 Testing config management page import")
     print("=" * 50)
-    
+
     try:
         from web.pages.config_management import render_config_management
-        print("✅ 配置管理页面导入成功")
+        print("✅ Config management page imported successfully")
         return True
     except Exception as e:
-        print(f"❌ 配置管理页面导入失败: {e}")
+        print(f"❌ Failed to import config management page: {e}")
         import traceback
-        print(f"错误详情: {traceback.format_exc()}")
+        print(f"Details: {traceback.format_exc()}")
         return False
 
 def test_config_manager_import():
-    """测试配置管理器导入"""
-    print("\n🧪 测试配置管理器导入")
+    """Test importing the config manager"""
+    print("\n🧪 Testing config manager import")
     print("=" * 50)
-    
+
     try:
         from tradingagents.config.config_manager import config_manager, token_tracker
-        print("✅ 配置管理器导入成功")
-        
-        # 测试基本功能
+        print("✅ Config manager imported successfully")
+
+        # Test basic functions
         models = config_manager.load_models()
-        print(f"📋 加载了 {len(models)} 个模型配置")
-        
+        print(f"📋 Loaded {len(models)} model configurations")
+
         pricing = config_manager.load_pricing()
-        print(f"💰 加载了 {len(pricing)} 个定价配置")
-        
+        print(f"💰 Loaded {len(pricing)} pricing configurations")
+
         settings = config_manager.load_settings()
-        print(f"⚙️ 加载了 {len(settings)} 个系统设置")
-        
+        print(f"⚙️ Loaded {len(settings)} system settings")
+
         return True
     except Exception as e:
-        print(f"❌ 配置管理器导入失败: {e}")
+        print(f"❌ Failed to import config manager: {e}")
         import traceback
-        print(f"错误详情: {traceback.format_exc()}")
+        print(f"Details: {traceback.format_exc()}")
         return False
 
 def test_streamlit_components():
-    """测试Streamlit组件"""
-    print("\n🧪 测试Streamlit组件")
+    """Test Streamlit components"""
+    print("\n🧪 Testing Streamlit components")
     print("=" * 50)
-    
+
     try:
         import streamlit as st
         import pandas as pd
         import plotly.express as px
         import plotly.graph_objects as go
-        
-        print("✅ Streamlit导入成功")
-        print("✅ Pandas导入成功")
-        print("✅ Plotly导入成功")
-        
+
+        print("✅ Streamlit imported successfully")
+        print("✅ Pandas imported successfully")
+        print("✅ Plotly imported successfully")
+
         return True
     except Exception as e:
-        print(f"❌ Streamlit组件导入失败: {e}")
+        print(f"❌ Failed to import Streamlit components: {e}")
         return False
 
 def main():
-    """主测试函数"""
-    print("🧪 Web配置管理页面测试")
+    """Main test runner"""
+    print("🧪 Web config management page tests")
     print("=" * 60)
-    
+
     tests = [
-        ("Streamlit组件", test_streamlit_components),
-        ("配置管理器", test_config_manager_import),
-        ("配置页面", test_config_page_import),
+        ("Streamlit components", test_streamlit_components),
+        ("Config manager", test_config_manager_import),
+        ("Config page", test_config_page_import),
     ]
-    
+
     passed = 0
     total = len(tests)
-    
+
     for test_name, test_func in tests:
         try:
             if test_func():
                 passed += 1
-                print(f"✅ {test_name} 测试通过")
+                print(f"✅ {test_name} test passed")
             else:
-                print(f"❌ {test_name} 测试失败")
+                print(f"❌ {test_name} test failed")
         except Exception as e:
-            print(f"❌ {test_name} 测试异常: {e}")
-    
-    print(f"\n📊 测试结果: {passed}/{total} 通过")
-    
+            print(f"❌ {test_name} test error: {e}")
+
+    print(f"\n📊 Test results: {passed}/{total} passed")
+
     if passed == total:
-        print("🎉 所有测试通过！配置管理页面可以正常使用")
-        print("\n💡 使用方法:")
-        print("1. 启动Web应用: python -m streamlit run web/app.py")
-        print("2. 在侧边栏选择 '⚙️ 配置管理'")
-        print("3. 配置API密钥、模型参数和费率设置")
-        print("4. 查看使用统计和成本分析")
+        print("🎉 All tests passed! The config management page looks usable")
+        print("\n💡 How to use:")
+        print("1. Start the web app: python -m streamlit run web/app.py")
+        print("2. Select '⚙️ Config Management' in the sidebar")
+        print("3. Configure API keys, model parameters and pricing")
+        print("4. Review usage statistics and cost analysis")
         return True
     else:
-        print("❌ 部分测试失败，请检查配置")
+        print("❌ Some tests failed, please check configuration")
         return False
 
 if __name__ == "__main__":

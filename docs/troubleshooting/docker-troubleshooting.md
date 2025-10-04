@@ -1,214 +1,219 @@
-# Docker容器启动失败排查指南
+# Docker Container Startup Troubleshooting Guide
 
-## 🔍 快速排查步骤
+## 🔍 Quick checklist
 
-### 1. 基础检查
+### 1. Basic checks
 
 ```bash
-# 检查容器状态
+# List container states
 docker-compose ps -a
 
-# 检查Docker服务
+# Docker version
 docker version
 
-# 检查系统资源
+# Disk usage summary
 docker system df
 ```
 
-### 2. 查看日志
+### 2. View logs
 
 ```bash
-# 查看所有服务日志
+# Show all service logs
 docker-compose logs
 
-# 查看特定服务日志
+# Service specific logs
 docker-compose logs web
 docker-compose logs mongodb
 docker-compose logs redis
 
-# 实时查看日志
+# Follow logs for web
 docker-compose logs -f web
 
-# 查看最近的日志
+# Tail recent logs
 docker-compose logs --tail=50 web
 ```
 
-### 3. 常见问题排查
+### 3. Common problems and fixes
 
-#### 🔴 端口冲突
+#### 🔴 Port conflicts
+
 ```bash
-# Windows检查端口占用
+# Windows: check port usage
 netstat -an | findstr :8501
 netstat -an | findstr :27017
 netstat -an | findstr :6379
 
-# 杀死占用端口的进程
-taskkill /PID <进程ID> /F
+# Kill a process by PID (Windows)
+taskkill /PID <PID> /F
 ```
 
-#### 🔴 数据卷问题
+#### 🔴 Volume & data issues
+
 ```bash
-# 查看数据卷
+# List volumes related to tradingagents
 docker volume ls | findstr tradingagents
 
-# 删除有问题的数据卷（会丢失数据）
+# Remove problematic volume (will lose data)
 docker volume rm tradingagents_mongodb_data
 docker volume rm tradingagents_redis_data
 
-# 重新创建数据卷
+# Recreate volumes
 docker volume create tradingagents_mongodb_data
 docker volume create tradingagents_redis_data
 ```
 
-#### 🔴 网络问题
+#### 🔴 Network issues
+
 ```bash
-# 查看网络
+# List networks related to tradingagents
 docker network ls | findstr tradingagents
 
-# 删除网络
+# Remove a network
 docker network rm tradingagents-network
 
-# 重新创建网络
+# Recreate network
 docker network create tradingagents-network
 ```
 
-#### 🔴 镜像问题
+#### 🔴 Image issues
+
 ```bash
-# 查看镜像
+# List images related to the project
 docker images | findstr tradingagents
 
-# 强制重新构建
+# Force rebuild without cache
 docker-compose build --no-cache
 
-# 删除镜像重新构建
+# Remove and rebuild image
 docker rmi tradingagents-cn:latest
 docker-compose up -d --build
 ```
 
-### 4. 环境变量检查
+### 4. Environment / .env checks
 
 ```bash
-# 检查.env文件是否存在
+# Ensure .env exists
 ls .env
 
-# 检查环境变量
+# Validate docker-compose config
 docker-compose config
 ```
 
-### 5. 磁盘空间检查
+### 5. Disk space checks
 
 ```bash
-# 检查Docker磁盘使用
+# Check Docker disk usage
 docker system df
 
-# 清理无用资源
+# Clean unused resources
 docker system prune -f
 
-# 清理所有未使用资源（谨慎使用）
+# Aggressively remove unused resources (be careful)
 docker system prune -a -f
 ```
 
-## 🛠️ 具体服务排查
+## 🛠️ Service-specific troubleshooting
 
-### Web服务 (Streamlit)
+### Web (Streamlit)
+
 ```bash
-# 查看Web服务日志
+# View web logs
 docker-compose logs web
 
-# 进入容器调试
+# Enter web container for debugging
 docker-compose exec web bash
 
-# 检查Python环境
+# Check Python environment
 docker-compose exec web python --version
 docker-compose exec web pip list
 ```
 
-### MongoDB服务
+### MongoDB
+
 ```bash
-# 查看MongoDB日志
+# View MongoDB logs
 docker-compose logs mongodb
 
-# 连接MongoDB测试
+# Connect interactively
 docker-compose exec mongodb mongo -u admin -p tradingagents123
 
-# 检查数据库状态
+# Ping the DB
 docker-compose exec mongodb mongo --eval "db.adminCommand('ping')"
 ```
 
-### Redis服务
+### Redis
+
 ```bash
-# 查看Redis日志
+# View Redis logs
 docker-compose logs redis
 
-# 连接Redis测试
+# Connect with redis-cli
 docker-compose exec redis redis-cli -a tradingagents123
 
-# 检查Redis状态
+# Ping Redis
 docker-compose exec redis redis-cli -a tradingagents123 ping
 ```
 
-## 🚨 紧急修复命令
+## ⚠️ Emergency recovery commands
 
-### 完全重置（会丢失数据）
+### Full reset (will remove data)
+
 ```bash
-# 停止所有容器
+# Stop containers
 docker-compose down
 
-# 删除所有相关资源
+# Remove volumes and orphans
 docker-compose down -v --remove-orphans
 
-# 清理系统
+# Clean Docker system
 docker system prune -f
 
-# 重新启动
+# Rebuild and start
 docker-compose up -d --build
 ```
 
-### 保留数据重启
+### Keep data but restart
+
 ```bash
-# 停止容器
+# Stop containers
 docker-compose down
 
-# 重新启动
+# Start again
 docker-compose up -d
 ```
 
-## 📝 日志分析技巧
+## 🧾 Log analysis tips
 
-### 常见错误模式
+### Frequent error patterns
 
-1. **端口占用**: `bind: address already in use`
-2. **权限问题**: `permission denied`
-3. **磁盘空间**: `no space left on device`
-4. **内存不足**: `out of memory`
-5. **网络问题**: `network not found`
-6. **镜像问题**: `image not found`
+1. Port already in use: `bind: address already in use`
+2. Permission denied: `permission denied`
+3. Disk full: `no space left on device`
+4. Out of memory: `out of memory`
+5. Network errors: `network not found`
+6. Image missing: `image not found`
 
-### 日志过滤
+### Filtering logs
+
 ```bash
-# 只看错误日志
-docker-compose logs | findstr ERROR
+# Show only errors
+docker-compose logs | grep ERROR
 
-# 只看警告日志
-docker-compose logs | findstr WARN
+# Show warnings
+docker-compose logs | grep WARN
 
-# 查看特定时间段日志
+# Show logs since a specific date
 docker-compose logs --since="2025-01-01T00:00:00"
 ```
 
-## 🔧 预防措施
+## 🛡️ Preventative measures
 
-1. **定期清理**: `docker system prune -f`
-2. **监控资源**: `docker system df`
-3. **备份数据**: 定期备份数据卷
-4. **版本控制**: 记录工作的配置版本
-5. **健康检查**: 配置容器健康检查
+1. Regular cleanup: `docker system prune -f`
+2. Monitor resources: `docker stats`
+3. Backup volumes periodically
+4. Use versioned images and CI/CD
 
-## 📞 获取帮助
+---
 
-如果以上方法都无法解决问题，请：
-
-1. 收集完整的错误日志
-2. 记录系统环境信息
-3. 描述具体的操作步骤
-4. 提供docker-compose.yml配置
+*Last updated: 2025-07-13*
+*Version: cn-0.1.7*

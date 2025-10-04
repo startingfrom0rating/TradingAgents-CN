@@ -1,4 +1,4 @@
-name: 上游同步检查
+name: Upstream Sync Check
 
 on:
   schedule:
@@ -40,26 +40,26 @@ jobs:
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
     
-    - name: 添加上游仓库
-      run: |
-        git remote add upstream https://github.com/TauricResearch/TradingAgents.git || true
-        git fetch upstream
-    
-    - name: 检查上游更新
-      id: check_updates
-      run: |
-        # 获取上游新提交数量
-        NEW_COMMITS=$(git rev-list --count HEAD..upstream/main)
-        echo "new_commits=$NEW_COMMITS" >> $GITHUB_OUTPUT
-        
-        if [ "$NEW_COMMITS" -gt 0 ]; then
-          echo "has_updates=true" >> $GITHUB_OUTPUT
-          echo "发现 $NEW_COMMITS 个新提交"
-          
-          # 获取最新提交信息
-          git log --oneline --no-merges HEAD..upstream/main | head -10 > recent_commits.txt
-          echo "recent_commits<<EOF" >> $GITHUB_OUTPUT
-          cat recent_commits.txt >> $GITHUB_OUTPUT
+    name: Check upstream updates
+    id: check_updates
+    run: |
+      # get the number of upstream commits
+      NEW_COMMITS=$(git rev-list --count HEAD..upstream/main)
+      echo "new_commits=$NEW_COMMITS" >> $GITHUB_OUTPUT
+
+      if [ "$NEW_COMMITS" -gt 0 ]; then
+        echo "has_updates=true" >> $GITHUB_OUTPUT
+        echo "Found $NEW_COMMITS new commits"
+
+        # capture latest commits
+        git log --oneline --no-merges HEAD..upstream/main | head -10 > recent_commits.txt
+        echo "recent_commits<<EOF" >> $GITHUB_OUTPUT
+        cat recent_commits.txt >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+      else
+        echo "has_updates=false" >> $GITHUB_OUTPUT
+        echo "No upstream updates found"
+      fi
           echo "EOF" >> $GITHUB_OUTPUT
         else
           echo "has_updates=false" >> $GITHUB_OUTPUT

@@ -1,173 +1,167 @@
-# TradingAgents 项目概述
+# TradingAgents Project Overview
 
-## 项目简介
+## Introduction
 
-TradingAgents-CN 是一个基于多智能体大语言模型（LLM）的金融交易框架，由 Tauric Research 开发并开源。本项目为中文增强版（v0.1.7），专为中国用户提供完整的A股支持、国产LLM集成、Docker容器化部署和专业报告导出功能。
+TradingAgents-CN is a multi-agent large language model (LLM) based financial analysis and decision framework. Originally enhanced for Chinese users (A-share support, domestic LLMs, Docker deployment, structured professional report export), this repository now presents English translations in-place per migration request.
 
-该项目模拟真实世界交易公司的运作模式，通过部署多个专业化的AI智能体来协作评估市场条件并做出交易决策。
+The system simulates a real trading organization by orchestrating multiple specialized AI agents that collaborate to evaluate market conditions and generate investment decisions.
 
-## 项目背景
+## Background
 
-### 研究动机
-传统的算法交易系统通常依赖单一的分析模型或策略，难以应对复杂多变的金融市场。而真实的交易公司通常采用团队协作的方式，由不同专业背景的分析师、研究员、交易员和风险管理人员共同参与决策过程。
+### Motivation
+Traditional algorithmic systems rely on a single model or narrow strategy—fragile in dynamic markets. Real trading desks distribute reasoning across specialists: fundamental analysts, technical strategists, macro/news interpreters, sentiment evaluators, traders, and risk managers.
 
-TradingAgents 项目的核心理念是将这种人类专家团队的协作模式数字化，通过多个专业化的AI智能体来重现这种协作决策过程。
+The core idea: Digitize this human expert team dynamic via coordinated autonomous LLM agents.
 
-### 技术创新
-- **多智能体协作**: 首次将多智能体系统应用于金融交易决策
-- **专业化分工**: 每个智能体专注于特定的分析领域
-- **结构化辩论**: 通过智能体间的辩论机制提高决策质量
-- **动态风险管理**: 实时评估和调整投资风险
+### Technical Innovations
+- **Multi-Agent Collaboration**: Coordinated autonomous roles for finance
+- **Specialization**: Each agent focuses on one analytical dimension
+- **Structured Debate**: Bull vs bear research confrontation improves signal quality
+- **Dynamic Risk Management**: Continuous scoring & adjustment
 
-## 核心特性
+## Core Features
 
-### 1. 多维度市场分析
-- **基本面分析**: 深入分析公司财务数据和基本面指标
-- **技术分析**: 运用技术指标识别价格趋势和交易信号
-- **新闻分析**: 实时监控和分析市场新闻及宏观事件
-- **情绪分析**: 分析社交媒体和投资者情绪
+### 1. Multi-Dimensional Market Analysis
+- **Fundamental Analysis**: Financial statement & valuation factor synthesis
+- **Technical Analysis**: Trend, momentum, structure & signal extraction
+- **News Analysis**: Event & macro narrative interpretation
+- **Sentiment Analysis**: Social / contextual mood inference
 
-### 2. 智能体协作机制
-- **并行分析**: 多个分析师同时工作，提高效率
-- **结构化辩论**: 看涨和看跌研究员进行观点交锋
-- **共识形成**: 通过协商机制达成投资共识
-- **风险评估**: 多层次风险管理和控制
+### 2. Agent Collaboration Mechanics
+- **Parallel Processing** to reduce latency
+- **Structured Debate** (bull vs bear research agents)
+- **Consensus Formation** via reasoning synthesis
+- **Layered Risk Evaluation** & mitigation hints
 
-### 3. 灵活的架构设计
-- **模块化组件**: 易于扩展和定制
-- **多LLM支持**: 🇨🇳 阿里百炼、Google AI、OpenAI、Anthropic等
-- **统一配置**: 简化的.env配置系统，启用开关完全生效
-- **智能降级**: 数据库不可用时自动使用文件缓存
+### 3. Flexible Architecture
+- **Modular Components** extensible via adapters
+- **Multi-LLM Support**: DashScope (Qwen), Google AI, OpenAI, Anthropic, DeepSeek
+- **Unified Configuration** through environment toggles
+- **Graceful Degradation** falling back to file caches if DB unavailable
 
-### 4. 丰富的数据集成
-- **🇨🇳 A股数据**: Tushare数据接口实时行情和历史数据 ✅
-- **美股数据**: FinnHub、Yahoo Finance实时数据 ✅
-- **新闻数据**: Google News、财经新闻集成 ✅
-- **社交数据**: Reddit情绪分析 ✅
-- **数据库支持**: MongoDB + Redis + 智能缓存 ✅
+### 4. Rich Data Integrations
+- **A-share Data**: Tushare (real-time + historical) ✅
+- **US Equities**: FinnHub, Yahoo Finance ✅
+- **News Sources**: Google News + finance feeds ✅
+- **Sentiment**: Reddit sampling ✅
+- **Persistence Layer**: MongoDB + Redis + intelligent caching ✅
 
-### 5. 现代化Web界面 ✅ **v0.1.2新增**
-- **Streamlit界面**: 直观的Web管理平台
-- **实时进度**: 分析过程可视化跟踪
-- **配置管理**: API密钥和系统配置管理
-- **Token统计**: 实时成本追踪和优化建议
-- **响应式设计**: 支持桌面和移动端访问
+### 5. Modern Web Interface (since v0.1.2)
+- **Streamlit Dashboard** for orchestration
+- **Real-Time Progress** visualization
+- **Config Management**: API keys, LLM selection, depth
+- **Token/Cost Tracking** instrumentation
+- **Responsive Layout** (desktop & mobile)
 
-## 应用场景
+## Application Scenarios
 
-### 1. 量化投资研究
-- 策略开发和回测
-- 因子挖掘和验证
-- 风险模型构建
-- 投资组合优化
+### 1. Quantitative Research
+- Strategy prototyping & hybrid signal blending
+- Factor investigation & validation loops
+- Risk model construction support
+- Portfolio scenario analysis
 
-### 2. 金融科技应用
-- 智能投顾系统
-- 风险管理平台
-- 市场分析工具
-- 交易决策支持
+### 2. FinTech & Productization
+- Advisory simulation & augmentation
+- Risk oversight tooling
+- Market intelligence dashboards
+- Analyst workflow acceleration
 
-### 3. 学术研究
-- 多智能体系统研究
-- 金融AI应用研究
-- 行为金融学研究
-- 市场微观结构研究
+### 3. Academic Research
+- Multi-agent coordination studies
+- Financial NLP experimentation
+- Behavioral finance modeling prototypes
+- (Future) microstructure analytical frameworks
 
-### 4. 教育培训
-- 金融分析教学
-- 交易策略学习
-- 风险管理培训
-- AI应用示例
+### 4. Education & Training
+- Structured financial reasoning exploration
+- Demonstrative research cycles
+- Risk communication training
+- Applied AI in finance labs
 
-## 技术优势
+## Technical Advantages
 
-### 1. 先进的AI技术
-- **大语言模型**: 利用最新的LLM技术进行金融分析
-- **多智能体系统**: 复杂的协作和决策机制
-- **自然语言处理**: 高质量的文本分析和理解
-- **机器学习**: 持续学习和优化能力
+### 1. Advanced AI Stack
+- **Large Language Models** for narrative reasoning
+- **Agent Graph Orchestration** for decomposed workflows
+- **NLP Pipelines** for event & sentiment extraction
+- **Adaptive Patterns** enabling future iterative refinement
 
-### 2. 专业的金融知识
-- **全面的分析框架**: 覆盖基本面、技术面、消息面等多个维度
-- **风险管理**: 完善的风险识别、评估和控制机制
-- **市场理解**: 深入的金融市场知识和经验
-- **实战导向**: 贴近真实交易环境的设计
+### 2. Financial Domain Depth
+- **Comprehensive Analytical Coverage** across fundamentals / technical / news / sentiment
+- **Embedded Risk Discipline** in each decision stage
+- **Domain Templates** ensure structured, reproducible output
+- **Practitioner-Oriented Design** aligned with real research
 
-### 3. 开放的生态系统
-- **开源框架**: 完全开源，支持社区贡献
-- **标准接口**: 易于集成和扩展
-- **丰富文档**: 详细的技术文档和使用指南
-- **活跃社区**: 持续的维护和改进
+### 3. Open Ecosystem
+- **Open Source** (Apache 2.0)
+- **Standard Interfaces** for pluggable adapters
+- **Documentation (in translation)**
+- **Community Evolution** and iterative enhancements
 
-## 性能表现
+## Performance Characteristics
 
-### 1. 分析准确性
-- 多维度分析提高预测准确性
-- 智能体协作减少单点偏差
-- 结构化辩论提升决策质量
+### 1. Analytical Robustness
+- Dimensional diversification reduces overfitting
+- Debate surfaces conflicting assumptions
+- Consensus reasoning improves justification quality
 
-### 2. 系统效率
-- 并行处理提高分析速度
-- 智能缓存减少重复计算
-- 优化的数据流提升性能
+### 2. System Efficiency
+- Parallel execution across agents
+- Multi-layer caching reduces redundant calls
+- Streamlined data flow for throughput stability
 
-### 3. 风险控制
-- 多层次风险评估
-- 实时风险监控
-- 动态风险调整
+### 3. Risk Governance
+- Layered scoring (risk, confidence, exposure hints)
+- Real-time evaluative adjustment
+- Future extension hooks for scenario stress modules
 
-## 发展路线图
+## Roadmap
 
-### 短期目标 (3-6个月)
-- 完善核心功能
-- 优化性能表现
-- 扩展数据源支持
-- 增强用户体验
+### Short Term (3–6 months)
+- Core feature refinement
+- Performance profiling & tuning
+- Additional data/provider integrations
+- UX improvements
 
-### 中期目标 (6-12个月)
-- 支持更多资产类别
-- 增加高级分析功能
-- 开发可视化界面
-- 构建插件生态
+### Mid Term (6–12 months)
+- Broader asset class expansion
+- Advanced research depth instrumentation
+- Visual exploration tooling
+- Plugin ecosystem foundations
 
-### 长期目标 (1-2年)
-- 实现实盘交易支持
-- 开发移动端应用
-- 建立商业化模式
-- 拓展国际市场
+### Long Term (12–24 months)
+- Paper trading & limited live execution support
+- Mobile companion interface
+- Commercial integration pathways
+- International multi-language parity
 
-## 社区与生态
+## Community & Ecosystem
 
-### 开源社区
-- **GitHub**: 代码托管和协作开发
-- **Discord**: 实时交流和技术支持
-- **论坛**: 深度讨论和经验分享
-- **文档**: 持续更新的技术文档
+### Open Source Channels
+- **GitHub**: code & collaboration
+- **(Future) Forum / Discussion** spaces
+- **Documentation**: evolving bilingual set
 
-### 合作伙伴
-- **学术机构**: 与高校和研究院所合作
-- **金融机构**: 与银行、基金等机构合作
-- **技术公司**: 与AI和金融科技公司合作
-- **数据提供商**: 与数据供应商建立合作
+### Partnership Vectors
+- Academic research collaboration
+- Financial institution experimentation
+- Technology vendor synergy
+- Data provider alignment
 
-### 贡献方式
-- **代码贡献**: 提交代码改进和新功能
-- **文档完善**: 改进文档和教程
-- **问题反馈**: 报告bug和提出建议
-- **社区建设**: 参与讨论和帮助他人
+### Contribution Pathways
+- **Code**: features, fixes, optimization
+- **Docs**: translation & clarity improvements
+- **Issue Feedback**: bug reports & ideas
+- **Knowledge Sharing**: guides & examples
 
-## 免责声明
+## Disclaimer
+The TradingAgents framework is for research and educational purposes only. Results are influenced by model selection, temperature, market regime, data latency/quality, and stochastic inference.
 
-TradingAgents 框架仅用于研究和教育目的。交易表现可能因多种因素而异，包括所选择的骨干语言模型、模型温度、交易周期、数据质量和其他非确定性因素。
+**Not financial, investment, or trading advice.** Users must evaluate risk independently and consult licensed professionals for investment decisions.
 
-**本框架不构成财务、投资或交易建议。** 用户在使用本框架进行任何投资决策时，应当谨慎评估风险，并咨询专业的财务顾问。
+## Contact
+- **Upstream Project**: https://github.com/TauricResearch/TradingAgents
+- **(Original Chinese Maintainer Contact Retained in Root README)**
 
-## 联系我们
-
-- **官方网站**: [https://tauric.ai](https://tauric.ai)
-- **GitHub**: [https://github.com/TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents)
-- **Discord**: [TradingResearch](https://discord.com/invite/hk9PGKShPK)
-- **Twitter**: [@TauricResearch](https://x.com/TauricResearch)
-- **邮箱**: contact@tauric.ai
-
-TradingAgents 代表了金融AI技术的前沿探索，我们期待与全球的研究者、开发者和金融专家一起，推动这一领域的发展和创新。
+This project reflects ongoing exploration at the intersection of AI and financial research. Contributions & critical evaluation are welcomed.

@@ -1,51 +1,51 @@
-# TradingAgents 智能体架构
+# TradingAgents Agent Architecture
 
-## 概述
+## Overview
 
-TradingAgents 采用多智能体协作架构，模拟真实金融机构的团队协作模式。每个智能体都有明确的职责分工，通过状态共享和消息传递实现协作决策。本文档基于实际代码结构，详细描述了智能体的架构设计和实现细节。
+TradingAgents implements a multi-agent collaboration model inspired by real financial research & execution teams. Each agent owns a distinct responsibility domain; shared state and message passing enable coordinated decision synthesis. This document (now translated) maps directly to the existing code structure.
 
-## 🏗️ 智能体层次结构
+## 🏗️ Layered Role Hierarchy
 
-### 架构层次
+### Layer Model
 
-TradingAgents 采用5层智能体架构，每层专注于特定的功能领域：
+The system defines five logical layers—each focused on a functional decision stage:
 
 ```mermaid
 graph TD
-    subgraph "管理层 (Management Layer)"
-        RESMGR[研究经理]
-        RISKMGR[风险经理]
+    subgraph "Management Layer"
+        RESMGR[Research Manager]
+        RISKMGR[Risk Manager]
     end
     
-    subgraph "分析层 (Analysis Layer)"
-        FA[基本面分析师]
-        MA[市场分析师]
-        NA[新闻分析师]
-        SA[社交媒体分析师]
-        CA[中国市场分析师]
+    subgraph "Analysis Layer"
+        FA[Fundamentals Analyst]
+        MA[Market Analyst]
+        NA[News Analyst]
+        SA[Social Sentiment Analyst]
+        CA[China Market Analyst]
     end
     
-    subgraph "研究层 (Research Layer)"
-        BR[看涨研究员]
-        BEAR[看跌研究员]
+    subgraph "Research Layer"
+        BR[Bull Researcher]
+        BEAR[Bear Researcher]
     end
     
-    subgraph "执行层 (Execution Layer)"
-        TRADER[交易员]
+    subgraph "Execution Layer"
+        TRADER[Trader]
     end
     
-    subgraph "风险层 (Risk Layer)"
-        CONSERVATIVE[保守辩论者]
-        NEUTRAL[中性辩论者]
-        AGGRESSIVE[激进辩论者]
+    subgraph "Risk Layer"
+        CONSERVATIVE[Conservative Debator]
+        NEUTRAL[Neutral Debator]
+        AGGRESSIVE[Aggressive Debator]
     end
     
     %% 数据流向
-    分析层 --> 研究层
-    研究层 --> 执行层
-    执行层 --> 风险层
-    风险层 --> 管理层
-    管理层 --> 分析层
+    Analysis Layer --> Research Layer
+    Research Layer --> Execution Layer
+    Execution Layer --> Risk Layer
+    Risk Layer --> Management Layer
+    Management Layer --> Analysis Layer
     
     %% 样式定义
     classDef analysisNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
@@ -61,19 +61,19 @@ graph TD
     class RESMGR,RISKMGR managementNode
 ```
 
-### 层次职责
+### Role Responsibilities
 
-- **分析层**: 负责数据收集和初步分析
-- **研究层**: 进行深度研究和观点辩论
-- **执行层**: 制定具体的交易决策
-- **风险层**: 评估和管理投资风险
-- **管理层**: 协调决策和最终审批
+- **Analysis Layer**: Raw data ingestion & first-pass interpretations
+- **Research Layer**: Structured argumentation (bull vs bear synthesis)
+- **Execution Layer**: Drafts actionable trade/investment plan
+- **Risk Layer**: Multi-perspective risk calibration & challenge
+- **Management Layer**: Coordination + escalation + final approval
 
-## 🔧 智能体状态管理
+## 🔧 State Management
 
-### AgentState 核心状态类
+### AgentState Core
 
-基于实际代码 `tradingagents/agents/utils/agent_states.py`，系统使用 `AgentState` 类管理所有智能体的共享状态：
+Derived from `tradingagents/agents/utils/agent_states.py`; this class aggregates all mutable cross-agent fields:
 
 ```python
 from typing import Annotated
@@ -82,64 +82,61 @@ from langgraph.graph import MessagesState
 class AgentState(MessagesState):
     """智能体状态管理类 - 继承自 LangGraph MessagesState"""
     
-    # 基础信息
-    company_of_interest: Annotated[str, "目标分析公司股票代码"]
-    trade_date: Annotated[str, "交易日期"]
-    sender: Annotated[str, "发送消息的智能体"]
-    
-    # 分析师报告
-    market_report: Annotated[str, "市场分析师报告"]
-    sentiment_report: Annotated[str, "社交媒体分析师报告"]
-    news_report: Annotated[str, "新闻分析师报告"]
-    fundamentals_report: Annotated[str, "基本面分析师报告"]
-    
-    # 研究和决策
-    investment_debate_state: Annotated[InvestDebateState, "投资辩论状态"]
-    investment_plan: Annotated[str, "投资计划"]
-    trader_investment_plan: Annotated[str, "交易员投资计划"]
-    
-    # 风险管理
-    risk_debate_state: Annotated[RiskDebateState, "风险辩论状态"]
-    final_trade_decision: Annotated[str, "最终交易决策"]
+    # Core identifiers
+    company_of_interest: Annotated[str, "Target equity symbol"]
+    trade_date: Annotated[str, "Trade/analysis date"]
+    sender: Annotated[str, "Originating agent name"]
+    # Analyst reports
+    market_report: Annotated[str, "Market/technical report"]
+    sentiment_report: Annotated[str, "Social sentiment report"]
+    news_report: Annotated[str, "News/event report"]
+    fundamentals_report: Annotated[str, "Fundamentals report"]
+    # Research & decision
+    investment_debate_state: Annotated[InvestDebateState, "Investment debate state"]
+    investment_plan: Annotated[str, "Consolidated investment plan"]
+    trader_investment_plan: Annotated[str, "Trader-adjusted plan"]
+    # Risk management
+    risk_debate_state: Annotated[RiskDebateState, "Risk debate state"]
+    final_trade_decision: Annotated[str, "Final trade decision"]
 ```
 
-### 辩论状态管理
+### Debate State Structures
 
-#### 投资辩论状态
+#### Investment Debate State
 
 ```python
 class InvestDebateState(TypedDict):
-    """研究员团队辩论状态"""
-    bull_history: Annotated[str, "看涨方对话历史"]
-    bear_history: Annotated[str, "看跌方对话历史"]
-    history: Annotated[str, "完整对话历史"]
-    current_response: Annotated[str, "最新回应"]
-    judge_decision: Annotated[str, "最终判决"]
-    count: Annotated[int, "对话轮次计数"]
+    """Bull/Bear research debate state"""
+    bull_history: Annotated[str, "Bull side turn history"]
+    bear_history: Annotated[str, "Bear side turn history"]
+    history: Annotated[str, "Merged transcript"]
+    current_response: Annotated[str, "Latest debate message"]
+    judge_decision: Annotated[str, "Interim or final adjudication"]
+    count: Annotated[int, "Debate round index"]
 ```
 
-#### 风险辩论状态
+#### Risk Debate State
 
 ```python
 class RiskDebateState(TypedDict):
-    """风险管理团队辩论状态"""
-    risky_history: Annotated[str, "激进分析师对话历史"]
-    safe_history: Annotated[str, "保守分析师对话历史"]
-    neutral_history: Annotated[str, "中性分析师对话历史"]
-    history: Annotated[str, "完整对话历史"]
-    latest_speaker: Annotated[str, "最后发言的分析师"]
-    current_risky_response: Annotated[str, "激进分析师最新回应"]
-    current_safe_response: Annotated[str, "保守分析师最新回应"]
-    current_neutral_response: Annotated[str, "中性分析师最新回应"]
-    judge_decision: Annotated[str, "判决结果"]
-    count: Annotated[int, "对话轮次计数"]
+    """Risk perspective debate state"""
+    risky_history: Annotated[str, "Aggressive perspective turns"]
+    safe_history: Annotated[str, "Conservative perspective turns"]
+    neutral_history: Annotated[str, "Neutral perspective turns"]
+    history: Annotated[str, "Merged transcript"]
+    latest_speaker: Annotated[str, "Last agent to speak"]
+    current_risky_response: Annotated[str, "Latest aggressive reply"]
+    current_safe_response: Annotated[str, "Latest conservative reply"]
+    current_neutral_response: Annotated[str, "Latest neutral reply"]
+    judge_decision: Annotated[str, "Risk judge decision"]
+    count: Annotated[int, "Round index"]
 ```
 
-## 🤖 智能体实现架构
+## 🤖 Implementation Structure
 
-### 分析师团队 (Analysis Layer)
+### Analysis Layer
 
-#### 1. 基本面分析师
+#### 1. Fundamentals Analyst
 
 **文件位置**: `tradingagents/agents/analysts/fundamentals_analyst.py`
 
@@ -150,25 +147,25 @@ from tradingagents.utils.logging_init import get_logger
 def create_fundamentals_analyst(llm, toolkit):
     @log_analyst_module("fundamentals")
     def fundamentals_analyst_node(state):
-        """基本面分析师节点实现"""
+    """Fundamentals analyst node implementation"""
         logger = get_logger("default")
         
         # 获取输入参数
         current_date = state["trade_date"]
         ticker = state["company_of_interest"]
         
-        # 股票类型检测
+    # Market type detection
         from tradingagents.utils.stock_utils import StockUtils
         market_info = StockUtils.get_market_info(ticker)
         
-        # 选择合适的分析工具
+    # Select appropriate analysis tools
         if toolkit.config["online_tools"]:
             tools = [toolkit.get_stock_fundamentals_unified]
         else:
             # 离线模式工具选择
             tools = [toolkit.get_fundamentals_openai]
         
-        # 执行分析逻辑
+    # Execute analysis logic
         # ...
         
         return state
@@ -176,7 +173,7 @@ def create_fundamentals_analyst(llm, toolkit):
     return fundamentals_analyst_node
 ```
 
-#### 2. 市场分析师
+#### 2. Market Analyst
 
 **文件位置**: `tradingagents/agents/analysts/market_analyst.py`
 
@@ -184,15 +181,15 @@ def create_fundamentals_analyst(llm, toolkit):
 def create_market_analyst(llm, toolkit):
     @log_analyst_module("market")
     def market_analyst_node(state):
-        """市场分析师节点实现"""
-        # 技术分析和市场趋势分析
+    """Market analyst node implementation"""
+    # Technical & market structure analysis
         # ...
         return state
     
     return market_analyst_node
 ```
 
-#### 3. 新闻分析师
+#### 3. News Analyst
 
 **文件位置**: `tradingagents/agents/analysts/news_analyst.py`
 
@@ -200,15 +197,15 @@ def create_market_analyst(llm, toolkit):
 def create_news_analyst(llm, toolkit):
     @log_analyst_module("news")
     def news_analyst_node(state):
-        """新闻分析师节点实现"""
-        # 新闻情绪分析和事件影响评估
+    """News analyst node implementation"""
+    # News sentiment & event impact assessment
         # ...
         return state
     
     return news_analyst_node
 ```
 
-#### 4. 社交媒体分析师
+#### 4. Social Sentiment Analyst
 
 **文件位置**: `tradingagents/agents/analysts/social_media_analyst.py`
 
@@ -216,15 +213,15 @@ def create_news_analyst(llm, toolkit):
 def create_social_media_analyst(llm, toolkit):
     @log_analyst_module("social_media")
     def social_media_analyst_node(state):
-        """社交媒体分析师节点实现"""
-        # 社交媒体情绪分析
+    """Social media sentiment analyst node"""
+    # Social sentiment extraction & aggregation
         # ...
         return state
     
     return social_media_analyst_node
 ```
 
-#### 5. 中国市场分析师
+#### 5. China Market Analyst
 
 **文件位置**: `tradingagents/agents/analysts/china_market_analyst.py`
 
@@ -232,54 +229,54 @@ def create_social_media_analyst(llm, toolkit):
 def create_china_market_analyst(llm, toolkit):
     @log_analyst_module("china_market")
     def china_market_analyst_node(state):
-        """中国市场分析师节点实现"""
-        # 专门针对中国A股市场的分析
+    """China A-share specialist node"""
+    # A-share specific structural logic
         # ...
         return state
     
     return china_market_analyst_node
 ```
 
-### 研究员团队 (Research Layer)
+### Research Layer
 
-#### 1. 看涨研究员
+#### 1. Bull Researcher
 
 **文件位置**: `tradingagents/agents/researchers/bull_researcher.py`
 
 ```python
 def create_bull_researcher(llm):
     def bull_researcher_node(state):
-        """看涨研究员节点实现"""
-        # 基于分析师报告生成看涨观点
+    """Bull-side research node"""
+    # Synthesize pro (bullish) thesis
         # ...
         return state
     
     return bull_researcher_node
 ```
 
-#### 2. 看跌研究员
+#### 2. Bear Researcher
 
 **文件位置**: `tradingagents/agents/researchers/bear_researcher.py`
 
 ```python
 def create_bear_researcher(llm):
     def bear_researcher_node(state):
-        """看跌研究员节点实现"""
-        # 基于分析师报告生成看跌观点
+    """Bear-side research node"""
+    # Synthesize contra (bearish) thesis
         # ...
         return state
     
     return bear_researcher_node
 ```
 
-### 交易员 (Execution Layer)
+### Execution Layer – Trader
 
 **文件位置**: `tradingagents/agents/trader/trader.py`
 
 ```python
 def create_trader(llm, memory):
     def trader_node(state, name):
-        """交易员节点实现"""
+    """Trader node implementation"""
         # 获取所有分析报告
         company_name = state["company_of_interest"]
         investment_plan = state["investment_plan"]
@@ -288,19 +285,19 @@ def create_trader(llm, memory):
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
         
-        # 股票类型检测
+    # Market type detection
         from tradingagents.utils.stock_utils import StockUtils
         market_info = StockUtils.get_market_info(company_name)
         
-        # 货币单位确定
+    # Currency selection & normalization
         currency = market_info['currency_name']
         currency_symbol = market_info['currency_symbol']
         
-        # 历史记忆检索
+    # Historical memory retrieval
         if memory is not None:
             past_memories = memory.get_memories(curr_situation, n_matches=2)
         
-        # 生成交易决策
+    # Produce structured trade decision
         # ...
         
         return state
@@ -308,226 +305,218 @@ def create_trader(llm, memory):
     return trader_node
 ```
 
-### 风险管理团队 (Risk Layer)
+### Risk Layer
 
-#### 1. 保守辩论者
+#### 1. Conservative Debator
 
 **文件位置**: `tradingagents/agents/risk_mgmt/conservative_debator.py`
 
 ```python
 def create_conservative_debator(llm):
     def conservative_debator_node(state):
-        """保守风险辩论者节点实现"""
-        # 保守的风险评估观点
+    """Conservative risk perspective node"""
+    # Conservative risk framing
         # ...
         return state
     
     return conservative_debator_node
 ```
 
-#### 2. 中性辩论者
+#### 2. Neutral Debator
 
 **文件位置**: `tradingagents/agents/risk_mgmt/neutral_debator.py`
 
 ```python
 def create_neutral_debator(llm):
     def neutral_debator_node(state):
-        """中性风险辩论者节点实现"""
-        # 中性的风险评估观点
+    """Neutral risk perspective node"""
+    # Balanced risk articulation
         # ...
         return state
     
     return neutral_debator_node
 ```
 
-#### 3. 激进辩论者
+#### 3. Aggressive Debator
 
 **文件位置**: `tradingagents/agents/risk_mgmt/aggresive_debator.py`
 
 ```python
 def create_aggressive_debator(llm):
     def aggressive_debator_node(state):
-        """激进风险辩论者节点实现"""
-        # 激进的风险评估观点
+    """Aggressive risk perspective node"""
+    # Aggressive escalation focus
         # ...
         return state
     
     return aggressive_debator_node
 ```
 
-### 管理层团队 (Management Layer)
+### Management Layer
 
-#### 1. 研究经理
+#### 1. Research Manager
 
 **文件位置**: `tradingagents/agents/managers/research_manager.py`
 
 ```python
 def create_research_manager(llm):
     def research_manager_node(state):
-        """研究经理节点实现"""
-        # 协调研究员辩论，形成投资计划
+    """Research manager coordination node"""
+    # Consolidate debate → investment plan
         # ...
         return state
     
     return research_manager_node
 ```
 
-#### 2. 风险经理
+#### 2. Risk Manager
 
 **文件位置**: `tradingagents/agents/managers/risk_manager.py`
 
 ```python
 def create_risk_manager(llm):
     def risk_manager_node(state):
-        """风险经理节点实现"""
-        # 协调风险辩论，做出最终决策
+    """Risk manager arbitration node"""
+    # Integrate risk debate → final decision
         # ...
         return state
     
     return risk_manager_node
 ```
 
-## 🔧 智能体工具集成
+## 🔧 Tool Integration
 
-### 统一工具架构
+### Unified Toolkit
 
-所有智能体都通过统一的工具接口访问数据和功能：
+All agents interface through a shared abstraction layer:
 
 ```python
 class ToolKit:
-    """统一工具包"""
+    """Unified toolkit abstraction"""
     
     def __init__(self, config):
         self.config = config
     
-    # 基本面分析工具
+    # Fundamentals
     def get_stock_fundamentals_unified(self, ticker: str):
-        """统一基本面分析工具，自动识别股票类型"""
+    """Unified fundamentals accessor (auto market detection)"""
         pass
     
-    # 市场数据工具
+    # Market data
     def get_market_data(self, ticker: str):
-        """获取市场数据"""
+    """Fetch market data"""
         pass
     
-    # 新闻数据工具
+    # News data
     def get_news_data(self, ticker: str):
-        """获取新闻数据"""
+    """Fetch news data"""
         pass
 ```
 
-### 日志装饰器系统
+### Logging Decorator System
 
-系统使用统一的日志装饰器来跟踪智能体执行：
+Execution logging standardized via decorator:
 
 ```python
 from tradingagents.utils.tool_logging import log_analyst_module
 
 @log_analyst_module("analyst_type")
 def analyst_node(state):
-    """分析师节点，自动记录执行日志"""
+    """Analyst node – automatic execution logging"""
     # 智能体逻辑
     pass
 ```
 
-## 🔄 智能体协作机制
+## 🔄 Collaboration Workflow
 
-### 状态传递流程
+### State Progression
+1. **Initialization**: Build `AgentState`
+2. **Analysis**: Parallel analyst report generation
+3. **Research**: Bull vs bear structured debate
+4. **Execution**: Trader synthesizes actionable plan
+5. **Risk**: Multi-perspective challenge & calibration
+6. **Management**: Coordination + approval
 
-1. **初始化**: 创建 `AgentState` 实例
-2. **分析阶段**: 各分析师并行执行，更新对应报告字段
-3. **研究阶段**: 研究员基于分析报告进行辩论
-4. **交易阶段**: 交易员综合所有信息制定交易计划
-5. **风险阶段**: 风险团队评估交易风险
-6. **管理阶段**: 管理层做出最终决策
-
-### 消息传递机制
-
-智能体通过 `MessagesState` 继承的消息系统进行通信：
+### Messaging
+Agents communicate via the LangGraph `MessagesState` list:
 
 ```python
-# 添加消息
+# Append message
 state["messages"].append({
     "role": "assistant",
     "content": "分析结果",
     "sender": "fundamentals_analyst"
 })
 
-# 获取历史消息
+# Retrieve history
 history = state["messages"]
 ```
 
-## 🛠️ 工具和实用程序
+## 🛠️ Utilities
 
-### 股票工具
-
-**文件位置**: `tradingagents/agents/utils/agent_utils.py`
+### Stock Utilities
+**Location**: `tradingagents/agents/utils/agent_utils.py`
 
 ```python
 from tradingagents.utils.stock_utils import StockUtils
 
-# 股票类型检测
+# Market metadata
 market_info = StockUtils.get_market_info(ticker)
 print(f"市场类型: {market_info['market_name']}")
 print(f"货币: {market_info['currency_name']}")
 ```
 
-### 内存管理
-
-**文件位置**: `tradingagents/agents/utils/memory.py`
+### Memory Management
+**Location**: `tradingagents/agents/utils/memory.py`
 
 ```python
 class Memory:
-    """智能体记忆管理"""
+    """Agent memory manager"""
     
     def get_memories(self, query: str, n_matches: int = 2):
-        """检索相关历史记忆"""
+    """Retrieve memories"""
         pass
     
     def add_memory(self, content: str, metadata: dict):
-        """添加新记忆"""
+    """Add memory record"""
         pass
 ```
 
-### Google工具处理器
-
-**文件位置**: `tradingagents/agents/utils/google_tool_handler.py`
+### Google Tool Handler
+**Location**: `tradingagents/agents/utils/google_tool_handler.py`
 
 ```python
 class GoogleToolCallHandler:
-    """Google AI 工具调用处理器"""
+    """Google AI tool call handler"""
     
     def handle_tool_calls(self, response, tools, state):
-        """处理Google AI的工具调用"""
+    """Handle tool invocations from Google AI responses"""
         pass
 ```
 
-## 📊 性能监控
+## 📊 Performance Monitoring
 
-### 日志系统
-
-系统使用统一的日志系统跟踪智能体执行：
+### Logging System
+Unified logging captures execution parameters & durations:
 
 ```python
 from tradingagents.utils.logging_init import get_logger
 
 logger = get_logger("default")
-logger.info(f"📊 [基本面分析师] 正在分析股票: {ticker}")
-logger.debug(f"📊 [DEBUG] 股票类型: {market_info}")
+logger.info(f"📊 [Fundamentals Analyst] Analyzing: {ticker}")
+logger.debug(f"📊 [DEBUG] Market info: {market_info}")
 ```
 
-### 执行追踪
+### Execution Tracing
+Per agent metrics include:
+- Inputs
+- Duration
+- Outputs
+- Errors (if any)
 
-每个智能体的执行都会被详细记录：
+## 🚀 Extension Guide
 
-- 输入参数
-- 执行时间
-- 输出结果
-- 错误信息
-
-## 🚀 扩展指南
-
-### 添加新智能体
+### Adding a New Analyst/Agent
 
 1. **创建智能体文件**
 ```python
@@ -535,47 +524,47 @@ logger.debug(f"📊 [DEBUG] 股票类型: {market_info}")
 def create_custom_analyst(llm, toolkit):
     @log_analyst_module("custom")
     def custom_analyst_node(state):
-        # 自定义分析逻辑
+    # Custom analysis logic
         return state
     
     return custom_analyst_node
 ```
 
-2. **更新状态类**
+2. **Extend State Class**
 ```python
 # 在 AgentState 中添加新字段
 custom_report: Annotated[str, "自定义分析师报告"]
 ```
 
-3. **集成到工作流**
+3. **Integrate Into Workflow**
 ```python
 # 在图构建器中添加节点
 workflow.add_node("custom_analyst", create_custom_analyst(llm, toolkit))
 ```
 
-### 扩展工具集
+### Extending Toolkit
 
 ```python
 class ExtendedToolKit(ToolKit):
     def get_custom_data(self, ticker: str):
-        """自定义数据获取工具"""
+    """Custom data retrieval tool"""
         pass
 ```
 
-## 🔧 配置选项
+## 🔧 Configuration Options
 
-### 智能体配置
+### Agent Config
 
 ```python
 agent_config = {
-    "online_tools": True,  # 是否使用在线工具
-    "memory_enabled": True,  # 是否启用记忆功能
-    "debug_mode": False,  # 调试模式
-    "max_iterations": 10,  # 最大迭代次数
+    "online_tools": True,      # enable live data
+    "memory_enabled": True,    # enable memory usage
+    "debug_mode": False,       # verbose debug
+    "max_iterations": 10,      # iteration ceiling
 }
 ```
 
-### 日志配置
+### Logging Config
 
 ```python
 logging_config = {
@@ -585,26 +574,26 @@ logging_config = {
 }
 ```
 
-## 🛡️ 最佳实践
+## 🛡️ Best Practices
 
-### 1. 状态管理
-- 始终通过 `AgentState` 传递数据
-- 避免在智能体间直接共享变量
-- 使用类型注解确保数据一致性
+### 1. State Discipline
+- Always mutate via `AgentState`
+- Avoid ad-hoc global passing
+- Preserve type annotations
 
-### 2. 错误处理
-- 在每个智能体中添加异常处理
-- 使用日志记录错误信息
-- 提供降级策略
+### 2. Error Handling
+- Local try/except with meaningful logging
+- Fallback pathways for external failures
+- Clear escalation boundaries
 
-### 3. 性能优化
-- 使用缓存减少重复计算
-- 并行执行独立的智能体
-- 监控内存使用情况
+### 3. Performance
+- Cache external & deterministic results
+- Parallelize independent analyst phases
+- Monitor memory & token consumption
 
-### 4. 代码组织
-- 每个智能体独立文件
-- 统一的命名规范
-- 清晰的文档注释
+### 4. Code Organization
+- One file per role
+- Consistent naming & suffixes
+- Docstrings explain intent & side effects
 
-TradingAgents 智能体架构通过清晰的分层设计、统一的状态管理和灵活的扩展机制，为复杂的金融决策流程提供了强大而可靠的技术基础。
+The TradingAgents agent architecture—through layered role separation, unified state modeling, and extensible tooling—provides a robust foundation for reproducible, explainable multi-perspective financial decision workflows.

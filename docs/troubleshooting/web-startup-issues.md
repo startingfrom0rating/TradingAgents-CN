@@ -1,41 +1,47 @@
-# 🔧 Web应用启动问题排除指南
+# ⚠️ Web Application Startup Troubleshooting Guide
 
-## 🚨 常见问题
+## 🚨 Common issues
 
 ### 1. ModuleNotFoundError: No module named 'tradingagents'
 
-**问题描述**:
-```bash
+Description:
+
+```
 ModuleNotFoundError: No module named 'tradingagents'
 ```
 
-**原因**: 项目没有安装到Python环境中，导致无法导入模块。
+Cause: The project package isn't installed into the Python environment, so Python cannot import the module.
 
-**解决方案**:
+Solutions:
 
-#### 方案A: 开发模式安装（推荐）
+Option A — Install in editable mode (recommended for development):
+
 ```bash
-# 1. 激活虚拟环境
-.\env\Scripts\activate  # Windows
-source env/bin/activate  # Linux/macOS
+# 1. Activate virtual environment
+# Windows
+.\env\Scripts\activate
+# Linux/macOS
+source env/bin/activate
 
-# 2. 安装项目到虚拟环境
+# 2. Install the project into the venv
 pip install -e .
 
-# 3. 启动Web应用
+# 3. Start the web app
 python start_web.py
 ```
 
-#### 方案B: 使用一键安装脚本
+Option B — Use the one‑click installer script:
+
 ```bash
-# 1. 激活虚拟环境
+# 1. Activate venv
 .\env\Scripts\activate  # Windows
 
-# 2. 运行一键安装脚本
+# 2. Run the installer script
 python scripts/install_and_run.py
 ```
 
-#### 方案C: 手动设置Python路径
+Option C — Add project root to PYTHONPATH (quick workaround):
+
 ```bash
 # Windows
 set PYTHONPATH=%CD%;%PYTHONPATH%
@@ -48,56 +54,64 @@ streamlit run web/app.py
 
 ### 2. ModuleNotFoundError: No module named 'streamlit'
 
-**问题描述**:
-```bash
+Description:
+
+```
 ModuleNotFoundError: No module named 'streamlit'
 ```
 
-**解决方案**:
+Fix:
+
 ```bash
-# 安装Streamlit和相关依赖
+# Install Streamlit and related packages
 pip install streamlit plotly altair
 
-# 或者安装完整的Web依赖
+# Or install the full web dependencies
 pip install -r requirements_web.txt
 ```
 
-### 3. 虚拟环境问题
+### 3. Virtual environment issues
 
-**问题描述**: 不确定是否在虚拟环境中
+Description: It's unclear whether the code is running inside the intended virtual environment.
 
-**检查方法**:
+Checks:
+
 ```bash
-# 检查Python路径
+# Check Python prefix
 python -c "import sys; print(sys.prefix)"
 
-# 检查是否在虚拟环境
+# Check if running in a venv
 python -c "import sys; print(hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix))"
 ```
 
-**解决方案**:
+Fix:
+
 ```bash
-# 创建虚拟环境（如果不存在）
+# Create a venv if missing
 python -m venv env
 
-# 激活虚拟环境
-.\env\Scripts\activate  # Windows
-source env/bin/activate  # Linux/macOS
+# Activate it
+# Windows
+.\env\Scripts\activate
+# Linux/macOS
+source env/bin/activate
 ```
 
-### 4. 端口占用问题
+### 4. Port already in use
 
-**问题描述**:
-```bash
+Description:
+
+```
 OSError: [Errno 48] Address already in use
 ```
 
-**解决方案**:
+Fixes:
+
 ```bash
-# 方法1: 使用不同端口
+# Option 1: Run on a different port
 streamlit run web/app.py --server.port 8502
 
-# 方法2: 杀死占用端口的进程
+# Option 2: Kill the process occupying the port
 # Windows
 netstat -ano | findstr :8501
 taskkill /PID <PID> /F
@@ -106,110 +120,105 @@ taskkill /PID <PID> /F
 lsof -ti:8501 | xargs kill -9
 ```
 
-### 5. 权限问题
+### 5. Permission issues
 
-**问题描述**: 在某些系统上可能遇到权限问题
+Description: Permission denied errors on some systems.
 
-**解决方案**:
+Fix:
+
 ```bash
-# 确保有执行权限
+# Ensure scripts are executable
 chmod +x start_web.py
 chmod +x web/run_web.py
 
-# 或者使用python命令运行
+# Or run with Python explicitly
 python start_web.py
 ```
 
-## 🛠️ 启动方式对比
+## 🛠️ Startup method comparison
 
-| 启动方式 | 优点 | 缺点 | 推荐度 |
-|---------|------|------|--------|
-| `python start_web.py` | 简单，自动处理路径 | 需要在项目根目录 | ⭐⭐⭐⭐⭐ |
-| `pip install -e . && streamlit run web/app.py` | 标准方式，稳定 | 需要安装步骤 | ⭐⭐⭐⭐ |
-| `python web/run_web.py` | 功能完整，有检查 | 可能有导入问题 | ⭐⭐⭐ |
-| `PYTHONPATH=. streamlit run web/app.py` | 不需要安装 | 环境变量设置复杂 | ⭐⭐ |
+| Startup method | Pros | Cons | Recommendation |
+|---|---:|---|---:|
+| `python start_web.py` | Simple; handles path setup | Requires project root | ⭐⭐⭐⭐⭐ |
+| `pip install -e . && streamlit run web/app.py` | Standard, stable | Requires install step | ⭐⭐⭐⭐ |
+| `python web/run_web.py` | Full features; includes checks | Might require extra imports | ⭐⭐⭐ |
+| `PYTHONPATH=. streamlit run web/app.py` | No install required | Slightly more environment setup | ⭐⭐ |
 
-## 🔍 诊断工具
+## 🔍 Diagnostic tools
 
-### 环境检查脚本
+### Environment check script
+
 ```bash
-# 运行环境检查
+# Run environment checks
 python scripts/check_api_config.py
 ```
 
-### 手动检查步骤
-```python
-# 检查Python环境
-import sys
-print("Python版本:", sys.version)
-print("Python路径:", sys.executable)
-print("虚拟环境:", hasattr(sys, 'real_prefix'))
+### Manual checks (quick)
 
-# 检查模块导入
+```python
+import sys
+print("Python version:", sys.version)
+print("Python executable:", sys.executable)
+print("In virtualenv:", hasattr(sys, 'real_prefix'))
+
 try:
     import tradingagents
-    print("✅ tradingagents模块可用")
+    print("✅ tradingagents module import OK")
 except ImportError as e:
-    print("❌ tradingagents模块不可用:", e)
+    print("❌ tradingagents not importable:", e)
 
 try:
     import streamlit
-    print("✅ streamlit模块可用")
+    print("✅ streamlit import OK")
 except ImportError as e:
-    print("❌ streamlit模块不可用:", e)
+    print("❌ streamlit not importable:", e)
 ```
 
-## 📋 完整启动检查清单
+## ✅ Pre-start checklist
 
-### 启动前检查
-- [ ] 虚拟环境已激活
-- [ ] Python版本 >= 3.10
-- [ ] 项目已安装 (`pip install -e .`)
-- [ ] Streamlit已安装
-- [ ] .env文件已配置
-- [ ] 端口8501未被占用
+- [ ] Virtual environment activated
+- [ ] Python >= 3.10
+- [ ] Project installed (`pip install -e .`)
+- [ ] Streamlit installed
+- [ ] `.env` configured
+- [ ] Port 8501 available
 
-### 启动命令
+## Start recommendation
+
 ```bash
-# 推荐启动方式
+# Recommended start method
 python start_web.py
 ```
 
-### 启动后验证
-- [ ] 浏览器自动打开 http://localhost:8501
-- [ ] 页面正常加载，无错误信息
-- [ ] 侧边栏配置正常显示
-- [ ] 可以选择分析师和股票代码
+## After start verification
 
-## 🆘 获取帮助
+- [ ] Open http://localhost:8501 in the browser
+- [ ] UI loads without errors
+- [ ] Sidebar configuration appears
+- [ ] You can select analyst and stock symbol
 
-如果以上方法都无法解决问题：
+## 📞 Get help
 
-1. **查看详细错误日志**:
-   ```bash
-   python start_web.py 2>&1 | tee startup.log
-   ```
+If the above steps don't resolve the issue:
 
-2. **检查系统环境**:
-   ```bash
-   python --version
-   pip list | grep -E "(streamlit|tradingagents)"
-   ```
+1. Collect startup logs:
 
-3. **重新安装**:
-   ```bash
-   pip uninstall tradingagents
-   pip install -e .
-   ```
+```bash
+python start_web.py 2>&1 | tee startup.log
+```
 
-4. **提交Issue**: 
-   - 访问 [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues)
-   - 提供错误日志和系统信息
+2. Check environment details:
 
-## 💡 最佳实践
+```bash
+python --version
+pip list | grep -E "(streamlit|tradingagents)"
+```
 
-1. **始终使用虚拟环境**
-2. **定期更新依赖**: `pip install -U -r requirements.txt`
-3. **保持项目结构完整**
-4. **定期清理缓存**: `python web/run_web.py --force-clean`
-5. **备份配置文件**: 定期备份.env文件
+3. Reinstall:
+
+```bash
+pip uninstall tradingagents
+pip install -e .
+```
+
+4. Open an Issue on GitHub and include logs and environment details.

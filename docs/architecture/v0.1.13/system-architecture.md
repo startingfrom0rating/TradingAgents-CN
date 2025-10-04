@@ -1,21 +1,21 @@
-# TradingAgents 系统架构
+# TradingAgents System Architecture
 
-## 概述
+## Overview
 
-TradingAgents 是一个基于多智能体协作的金融交易决策框架，采用 LangGraph 构建智能体工作流，支持中国A股、港股和美股的全面分析。系统通过模块化设计实现高度可扩展性和可维护性。
+TradingAgents is a multi-agent financial research & decision framework. It uses LangGraph to orchestrate agent workflows and supports comprehensive analysis across China A-share, Hong Kong, and US equity markets. A modular design underpins extensibility and maintainability.
 
-## 🏗️ 系统架构设计
+## 🏗️ Architectural Design
 
-### 架构原则
+### Guiding Principles
 
-- **模块化设计**: 每个组件独立开发和部署
-- **智能体协作**: 多智能体分工合作，模拟真实交易团队
-- **数据驱动**: 基于多源数据融合的决策机制
-- **可扩展性**: 支持新智能体、数据源和分析工具的快速集成
-- **容错性**: 完善的错误处理和降级策略
-- **性能优化**: 并行处理和缓存机制
+- **Modularity**: Each component can evolve independently
+- **Agent Collaboration**: Role specialization simulates real research desks
+- **Data Fusion**: Decisions derived from multi-source aggregation
+- **Extensibility**: Pluggable agents, data providers, LLM adapters
+- **Resilience**: Fallback & graceful degradation patterns
+- **Performance**: Parallel execution & layered caching
 
-### 系统架构图
+### Architecture Diagram
 
 ```mermaid
 graph TB
@@ -140,12 +140,12 @@ graph TB
     class CACHE,FILES,MEMORY_DB,CONFIG storageLayer
 ```
 
-## 📋 各层次详细说明
+## 📋 Layer Explanations
 
-### 1. 用户接口层 (User Interface Layer)
+### 1. User Interface Layer
 
-#### 命令行界面 (CLI)
-**文件位置**: `main.py`
+#### Command Line (CLI)
+**Location**: `main.py`
 
 ```python
 from tradingagents.graph.trading_graph import TradingAgentsGraph
@@ -167,8 +167,8 @@ _, decision = ta.propagate("NVDA", "2024-05-10")
 print(decision)
 ```
 
-#### Docker容器化部署
-**配置文件**: `pyproject.toml`
+#### Docker Packaging
+**Config File**: `pyproject.toml`
 
 ```toml
 [project]
@@ -181,10 +181,10 @@ requires-python = ">=3.10"
 tradingagents = "main:main"
 ```
 
-### 2. LLM集成层 (LLM Integration Layer)
+### 2. LLM Integration Layer
 
-#### LLM适配器架构
-**文件位置**: `tradingagents/llm_adapters/`
+#### Adapter Architecture
+**Location**: `tradingagents/llm_adapters/`
 
 ```python
 from langchain_openai import ChatOpenAI
@@ -211,18 +211,18 @@ elif config["llm_provider"] == "google":
     )
 ```
 
-#### 支持的LLM提供商
+#### Supported LLM Providers
 
 - **OpenAI**: GPT-4o, GPT-4o-mini, o1-preview, o1-mini
 - **Google AI**: Gemini-2.0-flash, Gemini-1.5-pro, Gemini-1.5-flash
-- **阿里百炼**: Qwen系列模型
-- **DeepSeek**: DeepSeek-V3 (高性价比选择)
-- **Anthropic**: Claude系列模型
+- **DashScope (Qwen)**: Qwen series models
+- **DeepSeek**: DeepSeek-V3 (cost-effective)
+- **Anthropic**: Claude series
 
-### 3. 核心框架层 (Core Framework Layer)
+### 3. Core Framework Layer
 
-#### TradingAgentsGraph 主控制器
-**文件位置**: `tradingagents/graph/trading_graph.py`
+#### TradingAgentsGraph (Primary Orchestrator)
+**Location**: `tradingagents/graph/trading_graph.py`
 
 ```python
 class TradingAgentsGraph:
@@ -237,9 +237,9 @@ class TradingAgentsGraph:
         """初始化交易智能体图和组件
         
         Args:
-            selected_analysts: 要包含的分析师类型列表
-            debug: 是否运行在调试模式
-            config: 配置字典，如果为None则使用默认配置
+            selected_analysts: list of analyst role identifiers
+            debug: enable verbose diagnostics
+            config: configuration dict (defaults if None)
         """
         self.debug = debug
         self.config = config or DEFAULT_CONFIG
@@ -264,8 +264,8 @@ class TradingAgentsGraph:
         self.signal_processor = SignalProcessor()
 ```
 
-#### GraphSetup 图构建器
-**文件位置**: `tradingagents/graph/setup.py`
+#### GraphSetup (Workflow Builder)
+**Location**: `tradingagents/graph/setup.py`
 
 ```python
 class GraphSetup:
@@ -298,8 +298,8 @@ class GraphSetup:
         return self.workflow.compile()
 ```
 
-#### ConditionalLogic 条件路由
-**文件位置**: `tradingagents/graph/conditional_logic.py`
+#### ConditionalLogic (Routing)
+**Location**: `tradingagents/graph/conditional_logic.py`
 
 ```python
 class ConditionalLogic:
@@ -318,10 +318,10 @@ class ConditionalLogic:
         return "continue_risk_discussion"
 ```
 
-### 4. 智能体协作层 (Agent Collaboration Layer)
+### 4. Agent Collaboration Layer
 
-#### 状态管理系统
-**文件位置**: `tradingagents/agents/utils/agent_states.py`
+#### State Management System
+**Location**: `tradingagents/agents/utils/agent_states.py`
 
 ```python
 from typing import Annotated
@@ -330,29 +330,26 @@ from langgraph.graph import MessagesState
 class AgentState(MessagesState):
     """智能体状态管理类 - 继承自 LangGraph MessagesState"""
     
-    # 基础信息
-    company_of_interest: Annotated[str, "目标分析公司股票代码"]
-    trade_date: Annotated[str, "交易日期"]
-    sender: Annotated[str, "发送消息的智能体"]
-    
-    # 分析师报告
-    market_report: Annotated[str, "市场分析师报告"]
-    sentiment_report: Annotated[str, "社交媒体分析师报告"]
-    news_report: Annotated[str, "新闻分析师报告"]
-    fundamentals_report: Annotated[str, "基本面分析师报告"]
-    
-    # 研究和决策
-    investment_debate_state: Annotated[InvestDebateState, "投资辩论状态"]
-    investment_plan: Annotated[str, "投资计划"]
-    trader_investment_plan: Annotated[str, "交易员投资计划"]
-    
-    # 风险管理
-    risk_debate_state: Annotated[RiskDebateState, "风险辩论状态"]
-    final_trade_decision: Annotated[str, "最终交易决策"]
+    # Core identifiers
+    company_of_interest: Annotated[str, "Target equity symbol"]
+    trade_date: Annotated[str, "Analysis trade date"]
+    sender: Annotated[str, "Originating agent"]
+    # Analyst reports
+    market_report: Annotated[str, "Market/technical analyst report"]
+    sentiment_report: Annotated[str, "Social/sentiment analyst report"]
+    news_report: Annotated[str, "News/event analyst report"]
+    fundamentals_report: Annotated[str, "Fundamentals analyst report"]
+    # Research & decisions
+    investment_debate_state: Annotated[InvestDebateState, "Investment debate state"]
+    investment_plan: Annotated[str, "Research consolidated plan"]
+    trader_investment_plan: Annotated[str, "Trader adaptation of plan"]
+    # Risk management
+    risk_debate_state: Annotated[RiskDebateState, "Risk debate state"]
+    final_trade_decision: Annotated[str, "Final trade decision"]
 ```
 
-#### 智能体工厂模式
-**文件位置**: `tradingagents/agents/`
+#### Agent Factory Pattern
+**Location**: `tradingagents/agents/`
 
 ```python
 # 分析师创建函数
@@ -387,10 +384,10 @@ from tradingagents.agents.managers import (
 )
 ```
 
-### 5. 工具集成层 (Tool Integration Layer)
+### 5. Tool Integration Layer
 
-#### Toolkit 统一工具包
-**文件位置**: `tradingagents/agents/utils/agent_utils.py`
+#### Toolkit (Unified Utilities)
+**Location**: `tradingagents/agents/utils/agent_utils.py`
 
 ```python
 class Toolkit:
@@ -401,48 +398,48 @@ class Toolkit:
         self.dataflow = DataFlowInterface(config)
     
     def get_stock_fundamentals_unified(self, ticker: str):
-        """统一基本面分析工具，自动识别股票类型"""
+    """Unified fundamentals accessor auto-detecting market type"""
         from tradingagents.utils.stock_utils import StockUtils
         market_info = StockUtils.get_market_info(ticker)
         
-        if market_info['market_type'] == 'A股':
+    if market_info['market_type'] == 'A-share':
             return self.dataflow.get_a_stock_fundamentals(ticker)
-        elif market_info['market_type'] == '港股':
+    elif market_info['market_type'] == 'HK':
             return self.dataflow.get_hk_stock_fundamentals(ticker)
         else:
             return self.dataflow.get_us_stock_fundamentals(ticker)
     
     def get_market_data(self, ticker: str, period: str = "1y"):
-        """获取市场数据"""
+        """Fetch market data"""
         return self.dataflow.get_market_data(ticker, period)
     
     def get_news_data(self, ticker: str, days: int = 7):
-        """获取新闻数据"""
+        """Fetch news data"""
         return self.dataflow.get_news_data(ticker, days)
 ```
 
-#### 数据流接口
-**文件位置**: `tradingagents/dataflows/interface.py`
+#### Data Flow Interface
+**Location**: `tradingagents/dataflows/interface.py`
 
 ```python
-# 全局配置管理
+# Global configuration
 from .config import get_config, set_config, DATA_DIR
 
-# 数据获取函数
+# Data acquisition
 def get_finnhub_news(
-    ticker: Annotated[str, "公司股票代码，如 'AAPL', 'TSM' 等"],
-    curr_date: Annotated[str, "当前日期，格式为 yyyy-mm-dd"],
-    look_back_days: Annotated[int, "回看天数"],
+    ticker: Annotated[str, "Equity ticker e.g. 'AAPL'"],
+    curr_date: Annotated[str, "Current date yyyy-mm-dd"],
+    look_back_days: Annotated[int, "Lookback days"],
 ):
-    """获取指定时间范围内的公司新闻
-    
+    """Fetch company news within a date range.
+
     Args:
-        ticker (str): 目标公司的股票代码
-        curr_date (str): 当前日期，格式为 yyyy-mm-dd
-        look_back_days (int): 回看天数
-    
+        ticker (str): target equity symbol
+        curr_date (str): current date yyyy-mm-dd
+        look_back_days (int): number of days to look back
+
     Returns:
-        str: 包含公司新闻的数据框
+        str: dataframe-like serialized news block or warning
     """
     start_date = datetime.strptime(curr_date, "%Y-%m-%d")
     before = start_date - relativedelta(days=look_back_days)
@@ -451,80 +448,80 @@ def get_finnhub_news(
     result = get_data_in_range(ticker, before, curr_date, "news_data", DATA_DIR)
     
     if len(result) == 0:
-        error_msg = f"⚠️ 无法获取{ticker}的新闻数据 ({before} 到 {curr_date})"
-        logger.debug(f"📰 [DEBUG] {error_msg}")
+    error_msg = f"⚠️ Unable to retrieve news for {ticker} ({before} to {curr_date})"
+    logger.debug(f"📰 [DEBUG] {error_msg}")
         return error_msg
     
     return result
 ```
 
-#### 记忆管理系统
-**文件位置**: `tradingagents/agents/utils/memory.py`
+#### Memory Management System
+**Location**: `tradingagents/agents/utils/memory.py`
 
 ```python
 class FinancialSituationMemory:
-    """金融情况记忆管理类"""
+    """Financial situation memory manager"""
     
     def __init__(self, config):
         self.config = config
         self.memory_store = {}
     
     def get_memories(self, query: str, n_matches: int = 2):
-        """检索相关历史记忆
-        
+        """Retrieve relevant historical memory entries.
+
         Args:
-            query (str): 查询字符串
-            n_matches (int): 返回匹配数量
-        
+            query (str): search query
+            n_matches (int): number of matches to return
+
         Returns:
-            List[Dict]: 相关记忆列表
+            List[Dict]: relevant memory objects
         """
         # 实现记忆检索逻辑
         pass
     
     def add_memory(self, content: str, metadata: dict):
-        """添加新记忆
-        
+        """Add new memory record.
+
         Args:
-            content (str): 记忆内容
-            metadata (dict): 元数据
+            content (str): memory body
+            metadata (dict): metadata map
         """
         # 实现记忆存储逻辑
         pass
 ```
 
-### 6. 数据源层 (Data Source Layer)
+### 6. Data Source Layer
 
-#### 多数据源支持
-**文件位置**: `tradingagents/dataflows/`
+#### Multi-Source Support
+**Location**: `tradingagents/dataflows/`
 
 ```python
-# AKShare - 中国金融数据
+# AKShare - China market data
 from .akshare_utils import (
     get_hk_stock_data_akshare,
     get_hk_stock_info_akshare
 )
 
-# Tushare - 专业金融数据
+# Tushare - professional China financial data
 from .tushare_utils import get_tushare_data
 
-# yfinance - 国际市场数据
+# yfinance - global market data
 from .yfin_utils import get_yahoo_finance_data
 
-# FinnHub - 新闻和基本面数据
+# FinnHub - news & fundamentals
 from .finnhub_utils import get_data_in_range
 
-# Reddit - 社交媒体情绪
+# Reddit - social sentiment
 from .reddit_utils import fetch_top_from_category
 
-# 中国社交媒体情绪
+# Chinese social media sentiment
 from .chinese_finance_utils import get_chinese_social_sentiment
 
-# Google新闻
+# Google News
 from .googlenews_utils import get_google_news
 ```
 
-#### 数据源可用性检查
+#### Provider Availability Checks
 
 ```python
 # 港股工具可用性检查
@@ -532,7 +529,7 @@ try:
     from .hk_stock_utils import get_hk_stock_data, get_hk_stock_info
     HK_STOCK_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"⚠️ 港股工具不可用: {e}")
+    logger.warning(f"⚠️ HK stock tools unavailable: {e}")
     HK_STOCK_AVAILABLE = False
 
 # yfinance可用性检查
@@ -540,15 +537,15 @@ try:
     import yfinance as yf
     YF_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"⚠️ yfinance库不可用: {e}")
+    logger.warning(f"⚠️ yfinance unavailable: {e}")
     yf = None
     YF_AVAILABLE = False
 ```
 
-### 7. 存储层 (Storage Layer)
+### 7. Storage Layer
 
-#### 配置管理
-**文件位置**: `tradingagents/default_config.py`
+#### Configuration Management
+**Location**: `tradingagents/default_config.py`
 
 ```python
 import os
@@ -561,144 +558,142 @@ DEFAULT_CONFIG = {
         os.path.abspath(os.path.join(os.path.dirname(__file__), ".")),
         "dataflows/data_cache",
     ),
-    # LLM设置
+    # LLM configuration
     "llm_provider": "openai",
     "deep_think_llm": "o4-mini",
     "quick_think_llm": "gpt-4o-mini",
     "backend_url": "https://api.openai.com/v1",
-    # 辩论和讨论设置
+    # Debate & discussion settings
     "max_debate_rounds": 1,
     "max_risk_discuss_rounds": 1,
     "max_recur_limit": 100,
-    # 工具设置
+    # Tool toggles
     "online_tools": True,
 }
 ```
 
-#### 数据缓存系统
-**文件位置**: `tradingagents/dataflows/config.py`
+#### Data Caching System
+**Location**: `tradingagents/dataflows/config.py`
 
 ```python
 from .config import get_config, set_config, DATA_DIR
 
-# 数据目录配置
+# Data directory configuration
 DATA_DIR = get_config().get("data_dir", "./data")
 CACHE_DIR = get_config().get("data_cache_dir", "./cache")
 
-# 缓存策略
+# Cache policies
 CACHE_EXPIRY = {
-    "market_data": 300,  # 5分钟
-    "news_data": 3600,   # 1小时
-    "fundamentals": 86400,  # 24小时
+    "market_data": 300,  # 5 min
+    "news_data": 3600,   # 1 hour
+    "fundamentals": 86400,  # 24 hours
 }
 ```
 
-## 🔄 系统工作流程
+## 🔄 System Workflow
 
-### 完整分析流程
+### Full Analysis Sequence
 
 ```mermaid
 sequenceDiagram
-    participant User as 用户
+    participant User as User
     participant Graph as TradingAgentsGraph
     participant Setup as GraphSetup
-    participant Analysts as 分析师团队
-    participant Researchers as 研究员团队
-    participant Trader as 交易员
-    participant RiskMgmt as 风险管理
-    participant Managers as 管理层
+    participant Analysts as Analysts
+    participant Researchers as Researchers
+    participant Trader as Trader
+    participant RiskMgmt as RiskMgmt
+    participant Managers as Managers
     
     User->>Graph: propagate(ticker, date)
     Graph->>Setup: 初始化工作流
     Setup->>Analysts: 并行执行分析
     
-    par 并行分析
-        Analysts->>Analysts: 市场分析
+    par Parallel analysis
+        Analysts->>Analysts: Market
     and
-        Analysts->>Analysts: 基本面分析
+        Analysts->>Analysts: Fundamentals
     and
-        Analysts->>Analysts: 新闻分析
+        Analysts->>Analysts: News
     and
-        Analysts->>Analysts: 社交媒体分析
+        Analysts->>Analysts: Sentiment
     end
     
     Analysts->>Researchers: 传递分析报告
-    Researchers->>Researchers: 看涨vs看跌辩论
-    Researchers->>Managers: 研究经理协调
-    Managers->>Trader: 生成投资计划
-    Trader->>RiskMgmt: 制定交易策略
-    RiskMgmt->>RiskMgmt: 风险评估辩论
-    RiskMgmt->>Managers: 风险经理决策
-    Managers->>Graph: 最终交易决策
-    Graph->>User: 返回决策结果
+    Researchers->>Researchers: Bull vs Bear debate
+    Researchers->>Managers: Research manager coordination
+    Managers->>Trader: Investment plan generation
+    Trader->>RiskMgmt: Strategy risk assessment
+    RiskMgmt->>RiskMgmt: Risk debate
+    RiskMgmt->>Managers: Risk manager decision
+    Managers->>Graph: Final trade decision
+    Graph->>User: Return decision
 ```
 
-### 数据流转过程
+### Data Flow Phases
 
-1. **数据获取**: 从多个数据源并行获取数据
-2. **数据处理**: 清洗、标准化和缓存数据
-3. **智能体分析**: 各智能体基于数据进行专业分析
-4. **状态同步**: 通过 `AgentState` 共享分析结果
-5. **协作决策**: 多轮辩论和协商形成最终决策
-6. **结果输出**: 格式化输出决策结果和推理过程
+1. **Acquisition**: Parallel multi-source retrieval
+2. **Processing**: Cleaning, normalization, caching
+3. **Agent Analysis**: Role-specific interpretation
+4. **State Synchronization**: Shared `AgentState`
+5. **Collaborative Debate**: Iterative refinement & consensus
+6. **Output Formatting**: Decision + reasoning export
 
-## 🛠️ 技术栈
+## 🛠️ Technology Stack
 
-### 核心框架
-- **LangGraph**: 智能体工作流编排
-- **LangChain**: LLM集成和工具调用
-- **Python 3.10+**: 主要开发语言
+### Core Framework
+- **LangGraph**: Agent workflow orchestration
+- **LangChain**: LLM integration & tool abstractions
+- **Python 3.10+**: Primary implementation language
 
-### LLM集成
-- **OpenAI**: GPT系列模型
-- **Google AI**: Gemini系列模型
-- **阿里百炼**: Qwen系列模型
-- **DeepSeek**: DeepSeek-V3模型
-- **Anthropic**: Claude系列模型
+### LLM Providers
+- OpenAI (GPT series)
+- Google AI (Gemini series)
+- DashScope (Qwen models)
+- DeepSeek (V3)
+- Anthropic (Claude)
 
-### 数据处理
-- **pandas**: 数据分析和处理
-- **numpy**: 数值计算
-- **yfinance**: 国际市场数据
-- **akshare**: 中国金融数据
-- **tushare**: 专业金融数据
+### Data Processing
+- pandas / numpy
+- yfinance (global equities)
+- akshare / tushare (China markets)
 
-### 存储和缓存
-- **文件系统**: 本地数据缓存
-- **JSON**: 配置和状态存储
-- **CSV/Parquet**: 数据文件格式
+### Storage & Caching
+- File system local caches
+- JSON config/state
+- CSV/Parquet archival
 
-### 部署和运维
-- **Docker**: 容器化部署
-- **Poetry/pip**: 依赖管理
-- **pytest**: 单元测试
-- **GitHub Actions**: CI/CD
+### Deployment & Ops
+- Docker containers
+- pip / poetry (dependency mgmt optional)
+- pytest testing
+- GitHub Actions CI/CD
 
-## ⚙️ 配置管理
+## ⚙️ Configuration Management
 
-### 环境变量配置
+### Environment Variables
 
 ```bash
-# LLM API密钥
+# LLM API keys
 OPENAI_API_KEY=your_openai_key
 GOOGLE_API_KEY=your_google_key
 DASHSCOPE_API_KEY=your_dashscope_key
 DEEPSEEK_API_KEY=your_deepseek_key
 ANTHROPIC_API_KEY=your_anthropic_key
 
-# 数据源API密钥
+# Data provider keys
 TUSHARE_TOKEN=your_tushare_token
 FINNHUB_API_KEY=your_finnhub_key
 REDDIT_CLIENT_ID=your_reddit_client_id
 REDDIT_CLIENT_SECRET=your_reddit_secret
 
-# 系统配置
+# System config
 TRADINGAGENTS_RESULTS_DIR=./results
 TRADINGAGENTS_DATA_DIR=./data
 TRADINGAGENTS_LOG_LEVEL=INFO
 ```
 
-### 运行时配置
+### Runtime Configuration
 
 ```python
 # 自定义配置示例
@@ -715,23 +710,23 @@ custom_config = {
 ta = TradingAgentsGraph(config=custom_config)
 ```
 
-## 📊 监控和观测
+## 📊 Observability
 
-### 日志系统
-**文件位置**: `tradingagents/utils/logging_init.py`
+### Logging
+**Location**: `tradingagents/utils/logging_init.py`
 
 ```python
 from tradingagents.utils.logging_init import get_logger
 
-# 获取日志记录器
+# Acquire logger
 logger = get_logger("default")
-logger.info("📊 [系统] 开始分析股票: AAPL")
-logger.debug("📊 [DEBUG] 配置信息: {config}")
-logger.warning("⚠️ [警告] 数据源不可用")
-logger.error("❌ [错误] API调用失败")
+logger.info("📊 [SYSTEM] Begin analysis: AAPL")
+logger.debug("📊 [DEBUG] Config: {config}")
+logger.warning("⚠️ [WARN] Data source unavailable")
+logger.error("❌ [ERROR] API call failed")
 ```
 
-### 性能监控
+### Performance Monitoring
 
 ```python
 # 智能体执行时间监控
@@ -739,19 +734,19 @@ from tradingagents.utils.tool_logging import log_analyst_module
 
 @log_analyst_module("market")
 def market_analyst_node(state):
-    """市场分析师节点，自动记录执行时间和性能指标"""
+    """Market analyst node with automatic timing & metrics logging"""
     # 分析逻辑
     pass
 ```
 
-### 错误处理和降级
+### Error Handling & Degradation
 
 ```python
 # 数据源降级策略
 try:
     data = primary_data_source.get_data(ticker)
 except Exception as e:
-    logger.warning(f"主数据源失败，切换到备用数据源: {e}")
+    logger.warning(f"Primary source failed, switching to fallback: {e}")
     data = fallback_data_source.get_data(ticker)
 
 # LLM调用重试机制
@@ -759,52 +754,52 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def call_llm_with_retry(llm, prompt):
-    """带重试机制的LLM调用"""
+    """LLM invocation with retry policy"""
     return llm.invoke(prompt)
 ```
 
-## 🚀 扩展性设计
+## 🚀 Extensibility Design
 
-### 添加新智能体
+### Adding a New Agent
 
 ```python
-# 1. 创建智能体文件
+# 1. Create agent file
 # tradingagents/agents/analysts/custom_analyst.py
 def create_custom_analyst(llm, toolkit):
     @log_analyst_module("custom")
     def custom_analyst_node(state):
-        # 自定义分析逻辑
+    # Custom analysis logic
         return state
     return custom_analyst_node
 
-# 2. 更新状态类
+# 2. Extend state class
 class AgentState(MessagesState):
-    custom_report: Annotated[str, "自定义分析师报告"]
+    custom_report: Annotated[str, "Custom analyst report"]
 
-# 3. 集成到工作流
+# 3. Integrate into workflow
 workflow.add_node("custom_analyst", create_custom_analyst(llm, toolkit))
 ```
 
-### 添加新数据源
+### Adding a New Data Source
 
 ```python
-# 1. 创建数据源适配器
+# 1. Create data source adapter
 # tradingagents/dataflows/custom_data_source.py
 def get_custom_data(ticker: str, date: str):
-    """自定义数据源接口"""
+    """Custom data source interface"""
     # 数据获取逻辑
     pass
 
-# 2. 集成到工具包
+# 2. Integrate into toolkit
 class Toolkit:
     def get_custom_data_tool(self, ticker: str):
         return get_custom_data(ticker, self.current_date)
 ```
 
-### 添加新LLM提供商
+### Adding a New LLM Provider
 
 ```python
-# 1. 创建LLM适配器
+# 1. Create LLM adapter
 # tradingagents/llm_adapters/custom_llm.py
 class CustomLLMAdapter:
     def __init__(self, api_key, model_name):
@@ -812,10 +807,10 @@ class CustomLLMAdapter:
         self.model_name = model_name
     
     def invoke(self, prompt):
-        # 自定义LLM调用逻辑
+    # Custom LLM invocation logic
         pass
 
-# 2. 集成到主配置
+# 2. Integrate into primary config
 if config["llm_provider"] == "custom":
     llm = CustomLLMAdapter(
         api_key=os.getenv("CUSTOM_API_KEY"),
@@ -823,38 +818,38 @@ if config["llm_provider"] == "custom":
     )
 ```
 
-## 🛡️ 安全性考虑
+## 🛡️ Security Considerations
 
-### API密钥管理
-- 使用环境变量存储敏感信息
-- 支持 `.env` 文件配置
-- 避免在代码中硬编码密钥
+### API Key Management
+- Environment variables for secrets
+- `.env` file supported
+- Avoid hard-coded keys
 
-### 数据隐私
-- 本地数据缓存，不上传敏感信息
-- 支持数据加密存储
-- 可配置数据保留策略
+### Data Privacy
+- Local caching (no forced remote exfiltration)
+- Optional encryption layer potential
+- Retention strategies configurable
 
-### 访问控制
-- API调用频率限制
-- 错误重试机制
-- 资源使用监控
+### Access Control
+- Request rate limiting patterns
+- Retry/backoff strategies
+- Resource utilization monitoring
 
-## 📈 性能优化
+## 📈 Performance Optimization
 
-### 并行处理
-- 分析师团队并行执行
-- 数据获取异步处理
-- 智能体状态并发更新
+### Parallelism
+- Parallel analyst execution
+- Asynchronous data retrieval
+- Concurrent state updates
 
-### 缓存策略
-- 多层缓存架构
-- 智能缓存失效
-- 数据预取机制
+### Caching Strategy
+- Layered cache architecture
+- Intelligent expiration
+- Data prefetch options
 
-### 资源管理
-- 内存使用优化
-- 连接池管理
-- 垃圾回收优化
+### Resource Management
+- Memory footprint tuning
+- Connection pooling
+- GC optimization patterns
 
-TradingAgents 系统架构通过模块化设计、智能体协作和多源数据融合，为复杂的金融决策提供了强大、可扩展和高性能的技术基础。系统支持多种LLM提供商、数据源和部署方式，能够适应不同的使用场景和性能要求。
+The TradingAgents architecture leverages modular design, agent collaboration, and multi-source data fusion to deliver a scalable, performant foundation for complex financial research workflows. Its provider-agnostic LLM layer, flexible data ingestion, and extensibility hooks enable adaptation across use cases and evolving AI model ecosystems.

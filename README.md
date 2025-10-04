@@ -1,3 +1,264 @@
+﻿# TradingAgents (Chinese Enhanced Edition)
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Version](https://img.shields.io/badge/Version-cn--0.1.15-green.svg)](./VERSION)
+[![Original](https://img.shields.io/badge/Based%20on-TauricResearch/TradingAgents-orange.svg)](https://github.com/TauricResearch/TradingAgents)
+
+> 🚀 **Latest Version cn-0.1.15** – Developer experience & LLM ecosystem upgrade: Baidu Qianfan (ERNIE) integration, expanded multi-LLM architecture, academic resources, enterprise workflow tooling.
+>
+> 🎯 **Core Features**: Multi-agent LLM trading framework · Native OpenAI + Google AI · Domestic LLM providers (Qwen, DeepSeek, Qianfan) · Custom endpoints · Persistent model selection · A-share + HK + US support · Professional report export · Docker deployment · Full Chinese localization (source heritage)
+
+This project is a multi-agent AI financial analysis & decision framework optimized originally for Chinese users, now presented in English per repository migration request. It coordinates multiple specialized LLM-driven agents (fundamental, technical, news, sentiment, debate, trader, risk) to generate structured investment intelligence.
+
+## 🙏 Upstream Acknowledgment
+
+Based on the pioneering open-source framework: [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents).
+
+Mission Goals:
+- Localize and extend for Chinese markets (A-share, HK)
+- Integrate domestic LLM ecosystems and model gateways
+- Provide institutional-style structured research output
+- Bridge research, developer, and applied finance communities
+
+---
+
+## v0.1.15 Highlights
+
+### LLM Ecosystem Upgrade
+- Baidu Qianfan (ERNIE) adapter integration
+- Unified OpenAI-compatible adapter layer
+- Extended provider abstraction (future-proof)
+- Comprehensive integration + testing guides
+
+### Academic / Research Enablement
+- TradingAgents paper (Chinese translation baseline retained externally)
+- Architecture deep-dive technical documents
+- Standard citation references
+
+### Developer Experience
+- Branching & contribution standards
+- Install verification scripts
+- Documentation restructuring (progressively being converted)
+- PR & issue templates
+
+### Enterprise Toolchain
+- Branch protection guidelines
+- Emergency recovery procedures
+- Extended test harness coverage
+- Deployment + configuration governance patterns
+
+---
+
+## v0.1.14 Recap
+- User auth & role permissions (admin / standard)
+- Session lifecycle hardening
+- MongoDB connection & persistence improvements
+- Data directory restructuring + migration scripts
+- Caching performance gains
+- Added focused functional & UI workflow tests
+
+## v0.1.13 Recap
+- Native custom OpenAI endpoint support
+- Full Google AI (Gemini) ecosystem integration (9 validated models)
+- Unified LLM adapter refactor (GoogleOpenAIAdapter)
+- Reliability: improved exception handling & performance metrics
+- Web UI: Intelligent model availability switching & error messaging
+
+## v0.1.12 Recap
+- Intelligent multi-stage news filtering (Basic / Enhanced / Integrated)
+- News quality scoring & deduplication
+- Tool call reliability fixes (DashScope, DeepSeek loop fix)
+- Expanded test coverage & structured technical fix reports
+- Documentation + project structure consolidation
+
+---
+
+## Architecture Overview
+
+### Multi-Agent Collaboration
+- Specialized analysts: Fundamentals · Technical · News · Sentiment
+- Structured debate: Bull vs Bear researchers
+- Trader synthesis: Aggregates cross-discipline signals
+- Risk manager: Confidence calibration & mitigation annotations
+
+### Web Interface (Streamlit)
+- Real-time progress visualization & ETA
+- Persistent session state across refresh
+- Configurable research depth (5 levels, 2–25 min)
+- Export: Markdown / Word / PDF institutional-style reports
+- Multi-provider LLM switching with persistent URL-encoded state
+
+### Research Depth Levels
+| Level | Duration (approx) | Scope |
+|-------|-------------------|-------|
+| 1 | 2–4 min | Quick scan (technical baseline) |
+| 2 | 4–6 min | Technical + fundamentals |
+| 3 | 6–10 min | Adds news sentiment (recommended) |
+| 4 | 10–15 min | Multi-round analyst debate |
+| 5 | 15–25 min | Full research pack |
+
+### Supported Markets
+| Region | Format Examples |
+|--------|-----------------|
+| US | AAPL, TSLA, MSFT |
+| A-share | 000001, 600519, 300750 |
+| Hong Kong | 0700.HK, 9988.HK |
+
+---
+
+## User & Permission System
+
+Default Accounts (change immediately):
+| Username | Password  | Role  | Description |
+|----------|-----------|-------|-------------|
+| admin    | admin123  | Admin | Full system control |
+| user     | user123   | User  | Standard analysis & report access |
+
+Features:
+- Authentication (username/password)
+- Role-based access control (extensible)
+- Session timeout & security controls
+- Activity audit logging
+
+CLI Management (examples):
+```bash
+python scripts/user_password_manager.py list
+python scripts/user_password_manager.py create analyst01 --role trader
+python scripts/user_password_manager.py change-password admin
+```
+Config file location: `web/config/users.json`
+
+---
+
+## Key Advantages
+- Multi-provider LLM integration (DashScope, DeepSeek, Google AI, OpenRouter, OpenAI-compatible)
+- URL-persistent model selection & quick-switch hot models
+- Intelligent news filtering & ranking pipeline
+- Asynchronous progress tracking & resilient state
+- Multi-layer data fallback: Redis → MongoDB → API → file cache
+- Professional export formatting (Markdown / DOCX / PDF)
+- Containerized stack for reproducibility
+
+---
+
+## Technical Stack
+| Layer | Technologies |
+|-------|--------------|
+| Core | Python 3.10+, LangChain, LangGraph |
+| Web  | Streamlit |
+| Data | Tushare, AkShare, FinnHub, Yahoo Finance |
+| Persistence | MongoDB, Redis (optional) |
+| LLM Providers | DashScope (Qwen), DeepSeek, Google Gemini, OpenRouter, OpenAI |
+
+---
+
+## Quick Start (Local)
+```bash
+python -m pip install --upgrade pip
+pip install -e .
+cp .env.example .env
+# edit API keys
+python start_web.py  # Open http://localhost:8501
+```
+
+Minimal `.env` keys (examples):
+```env
+DASHSCOPE_API_KEY=...
+FINNHUB_API_KEY=...
+TUSHARE_TOKEN=...
+GOOGLE_API_KEY=...
+DEEPSEEK_API_KEY=...
+MONGODB_ENABLED=false
+REDIS_ENABLED=false
+```
+
+Programmatic usage:
+```python
+from tradingagents.graph.trading_graph import TradingAgentsGraph
+from tradingagents.default_config import DEFAULT_CONFIG
+
+config = DEFAULT_CONFIG.copy()
+config["deep_think_llm"] = "gpt-4o-mini"
+config["quick_think_llm"] = "gpt-4o-mini"
+config["max_debate_rounds"] = 1
+config["online_tools"] = True
+
+ta = TradingAgentsGraph(debug=True, config=config)
+state, decision = ta.propagate("AAPL", "2024-01-15")
+print(decision)
+```
+
+Cost optimization tips:
+```python
+config["deep_think_llm"] = "gpt-4o-mini"
+config["max_debate_rounds"] = 1
+config["online_tools"] = False  # prefer cached data
+```
+
+Data directory configuration:
+```bash
+python -m cli.main data-config --show
+python -m cli.main data-config --set /custom/data
+```
+
+---
+
+## Report Export
+Supported formats:
+- Markdown (.md)
+- Word (.docx)
+- PDF (.pdf)
+
+Sections include: Decision summary · Multi-angle analysis · Risk disclosures · Generation metadata.
+
+---
+
+## Contributing
+We welcome:
+- Bug fixes · Feature additions · Documentation improvements · Localization consolidation · Performance tuning · Test expansion
+
+Workflow:
+1. Fork
+2. Create feature branch
+3. Commit changes
+4. Push
+5. Open Pull Request
+
+See `CONTRIBUTORS.md`.
+
+---
+
+## License
+Apache 2.0 – see `LICENSE`.
+
+You may use, modify, distribute, and patent—retain notices.
+
+---
+
+## Credits & Ethos
+Acknowledges the foundational innovation of the upstream TradingAgents project. This edition focuses on operational localization, expanded provider integration, and structured research UX.
+
+Strategic pillars:
+- Technology diffusion · Education enablement · Cross-community collaboration · Applied AI finance acceleration
+
+---
+
+## Disclaimer
+Research & educational use only. Not investment advice.
+- Market behavior is uncertain
+- LLM outputs are probabilistic
+- Investment carries risk
+- Consult licensed professionals
+
+---
+
+## Support
+Star the repo if useful. Feedback & issues: GitHub Issues.
+
+---
+
+© 2025 TradingAgents-CN Contributors. Apache 2.0 Licensed.
 # TradingAgents 中文增强版
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)

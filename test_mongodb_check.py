@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-检查MongoDB中的分析记录
+Check analysis records stored in MongoDB
 """
 
 import sys
@@ -15,38 +15,38 @@ sys.path.insert(0, str(project_root))
 # 导入MongoDB报告管理器
 try:
     from web.utils.mongodb_report_manager import mongodb_report_manager
-    print(f"✅ MongoDB报告管理器导入成功")
+    print(f"✅ MongoDB report manager imported successfully")
 except ImportError as e:
-    print(f"❌ MongoDB报告管理器导入失败: {e}")
+    print(f"❌ Failed to import MongoDB report manager: {e}")
     sys.exit(1)
 
 def check_mongodb_connection():
-    """检查MongoDB连接状态"""
+    """Check MongoDB connection status"""
     print(f"\n🔍 检查MongoDB连接状态...")
     print(f"连接状态: {mongodb_report_manager.connected}")
     
     if not mongodb_report_manager.connected:
-        print(f"❌ MongoDB未连接")
+        print(f"❌ MongoDB not connected")
         return False
     
-    print(f"✅ MongoDB连接正常")
+    print(f"✅ MongoDB connection OK")
     return True
 
 def check_analysis_records():
-    """检查分析记录"""
+    """Check analysis records"""
     print(f"\n📊 检查分析记录...")
     
     try:
-        # 获取所有记录
+        # Retrieve all records
         all_reports = mongodb_report_manager.get_all_reports(limit=50)
-        print(f"总记录数: {len(all_reports)}")
+        print(f"Total records: {len(all_reports)}")
         
         if not all_reports:
-            print(f"⚠️ MongoDB中没有分析记录")
+            print(f"⚠️ No analysis records found in MongoDB")
             return
         
         # 显示最近的记录
-        print(f"\n📋 最近的分析记录:")
+        print(f"\n📋 Recent analysis records:")
         for i, report in enumerate(all_reports[:5]):
             print(f"\n记录 {i+1}:")
             print(f"  分析ID: {report.get('analysis_id', 'N/A')}")
@@ -58,62 +58,62 @@ def check_analysis_records():
             
             # 检查报告内容
             reports = report.get('reports', {})
-            print(f"  报告模块数量: {len(reports)}")
+            print(f"  Number of report modules: {len(reports)}")
             
             if reports:
-                print(f"  报告模块:")
+                print(f"  Report modules:")
                 for module_name, content in reports.items():
                     content_length = len(content) if isinstance(content, str) else 0
                     print(f"    - {module_name}: {content_length} 字符")
                     
                     # 检查内容是否为空或只是占位符
                     if content_length == 0:
-                        print(f"      ⚠️ 内容为空")
+                        print(f"      ⚠️ Content is empty")
                     elif isinstance(content, str) and ("暂无详细分析" in content or "演示数据" in content):
-                        print(f"      ⚠️ 内容为演示数据或占位符")
+                        print(f"      ⚠️ Content appears to be demo data or a placeholder")
                     else:
-                        print(f"      ✅ 内容正常")
+                        print(f"      ✅ Content looks OK")
             else:
-                print(f"  ⚠️ 没有报告内容")
+                print(f"  ⚠️ No report content present")
                 
     except Exception as e:
-        print(f"❌ 检查分析记录失败: {e}")
+        print(f"❌ Failed to check analysis records: {e}")
         import traceback
-        print(f"详细错误: {traceback.format_exc()}")
+        print(f"Details: {traceback.format_exc()}")
 
 def check_specific_stock(stock_symbol="000001"):
-    """检查特定股票的记录"""
+    """Check records for a specific stock"""
     print(f"\n🔍 检查股票 {stock_symbol} 的记录...")
     
     try:
         reports = mongodb_report_manager.get_analysis_reports(
-            limit=10, 
+            limit=10,
             stock_symbol=stock_symbol
         )
         
-        print(f"股票 {stock_symbol} 的记录数: {len(reports)}")
+        print(f"Number of records for stock {stock_symbol}: {len(reports)}")
         
         if reports:
             latest_report = reports[0]
-            print(f"\n最新记录详情:")
+            print(f"\nLatest record details:")
             print(f"  分析ID: {latest_report.get('analysis_id')}")
             print(f"  时间戳: {latest_report.get('timestamp')}")
             print(f"  状态: {latest_report.get('status')}")
             
             reports_content = latest_report.get('reports', {})
             if reports_content:
-                print(f"\n报告内容详情:")
+                print(f"\nReport content details:")
                 for module_name, content in reports_content.items():
                     if isinstance(content, str):
                         preview = content[:200] + "..." if len(content) > 200 else content
                         print(f"\n{module_name}:")
-                        print(f"  长度: {len(content)} 字符")
+                        print(f"  Length: {len(content)} chars")
                         print(f"  预览: {preview}")
         else:
-            print(f"⚠️ 没有找到股票 {stock_symbol} 的记录")
+            print(f"⚠️ No records found for stock {stock_symbol}")
             
     except Exception as e:
-        print(f"❌ 检查特定股票记录失败: {e}")
+        print(f"❌ Failed to check specific stock records: {e}")
 
 def main():
     print(f"🔍 MongoDB分析记录检查工具")

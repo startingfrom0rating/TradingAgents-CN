@@ -1,214 +1,197 @@
-# Pull Request 模板
+<!-- Pull Request template translated to English below -->
 
-## 📋 PR 类型
-请标记此 PR 的类型：
+# Pull Request Template
 
-- [ ] 🌟 新功能 (feature)
-- [ ] 🐛 Bug 修复 (bugfix)
-- [ ] 🧹 代码重构 (refactor)
-- [ ] 📝 文档更新 (documentation)
-- [ ] 🎨 样式优化 (style)
-- [ ] ⚡ 性能优化 (performance)
-- [ ] 🔧 配置/构建 (config/build)
-- [ ] 🧪 测试相关 (test)
-- [ ] 🤖 LLM 适配器集成 (llm-adapter)
+## PR Type
+Please indicate the type of this PR:
 
-## 📖 PR 描述
+- [ ] Feature
+- [ ] Bugfix
+- [ ] Refactor
+- [ ] Documentation
+- [ ] Style
+- [ ] Performance
+- [ ] Config/Build
+- [ ] Test
+- [ ] LLM Adapter Integration
 
-### 变更摘要
-<!-- 请简要描述此 PR 的主要变更 -->
+## Description
 
-### 变更详情
-<!-- 请详细描述具体的改动内容 -->
+### Summary of changes
+<!-- Brief summary of main changes -->
 
-### 相关 Issue
-<!-- 如果此 PR 解决了某个 Issue，请链接：Fixes #issue_number -->
+### Details
+<!-- Detailed description of changes -->
 
-## 🤖 LLM 适配器集成检查清单
+### Related issue
+<!-- If this PR closes an issue, link it: Fixes #issue_number -->
 
-> **注意**: 如果此 PR 涉及 LLM 适配器集成，请完成以下检查清单。如果不涉及，可以跳过此部分。
+## LLM Adapter Integration Checklist (if applicable)
 
-### ✅ 代码实现检查
+If this PR involves adding or updating an LLM adapter, please complete this checklist. Otherwise you can skip.
 
-- [ ] **适配器类实现**
-  - [ ] 创建了继承自 `OpenAICompatibleBase` 的适配器类
-  - [ ] 正确设置了 `provider_name`、`api_key_env_var`、`base_url`
-  - [ ] 实现了必要的模型配置
+### Implementation
+- [ ] Adapter class implemented (inherits from OpenAICompatibleBase)
+- [ ] provider_name, api_key_env_var, base_url configured
+- [ ] Model configuration implemented
 
-- [ ] **注册和集成**
-  - [ ] 在 `OPENAI_COMPATIBLE_PROVIDERS` 字典中注册了提供商
-  - [ ] 在 `__init__.py` 中添加了适配器导出
-  - [ ] 在前端 `sidebar.py` 中添加了提供商选项
+### Registration & Integration
+- [ ] Registered in OPENAI_COMPATIBLE_PROVIDERS
+- [ ] Exported in package __init__.py
+- [ ] Added provider option in frontend sidebar
 
-- [ ] **环境变量配置**
-  - [ ] 在 `.env.example` 中添加了 API Key 示例
-  - [ ] 环境变量命名遵循 `{PROVIDER}_API_KEY` 格式
-  - [ ] 提供了正确的 `base_url` 配置
+### Environment
+- [ ] .env.example updated with example API key
+- [ ] Env var naming follows {PROVIDER}_API_KEY
+- [ ] base_url configuration provided
 
-### ✅ 测试和验证
+## Testing & Validation
 
-- [ ] **基础功能测试**
-  - [ ] API 连接测试通过
-  - [ ] 简单文本生成功能正常
-  - [ ] 错误处理机制有效
+### Basic tests
+- [ ] API connectivity verified
+- [ ] Simple text generation works
+- [ ] Error handling in place
 
-- [ ] **工具调用测试**
-  - [ ] Function calling 功能正常工作
-  - [ ] 工具参数解析正确
-  - [ ] 复杂工具调用场景稳定
+### Tool calling tests
+- [ ] Function calling works
+- [ ] Tool parameter parsing correct
+- [ ] Complex tool-call scenarios stable
 
-- [ ] **集成测试**
-  - [ ] 前端界面显示正常
-  - [ ] 模型选择器工作正确
-  - [ ] TradingGraph 集成成功
-  - [ ] 端到端分析流程正常
+### Integration tests
+- [ ] Frontend displays as expected
+- [ ] Model selector works
+- [ ] TradingGraph integration succeeds
+- [ ] End-to-end analysis flow works
 
-- [ ] **性能和稳定性测试**
-  - [ ] 响应时间合理（< 30秒）
-  - [ ] 连续运行测试通过（> 30分钟）
-  - [ ] 内存使用稳定
-  - [ ] 并发请求处理正确
+### Performance & Stability
+- [ ] Response latency reasonable (< 30s)
+- [ ] Long-run stability (> 30 minutes)
+- [ ] Memory usage stable
+- [ ] Concurrency handling validated
 
-### ✅ 文档和配置
+## Documentation & Configuration
 
-- [ ] **代码文档**
-  - [ ] 适配器类包含完整的 docstring
-  - [ ] 关键方法有适当的注释
-  - [ ] 参数说明清晰
+### Code documentation
+- [ ] Adapter includes docstrings
+- [ ] Key methods commented
+- [ ] Parameters documented
 
-- [ ] **用户文档**
-  - [ ] 更新了相关的用户指南（如果需要）
-  - [ ] 提供了配置示例
-  - [ ] 包含故障排除信息（如果适用）
+### User documentation
+- [ ] Relevant user guides updated (if needed)
+- [ ] Configuration examples provided
+- [ ] Troubleshooting notes included (if applicable)
 
-### 📝 测试报告
+## Test Report (LLM adapter PRs)
 
-如果这是 LLM 适配器 PR，请提供以下信息：
+Provider info:
+- Name:
+- Website:
+- API docs:
+- Supported models:
 
-**提供商信息**:
-- 提供商名称: 
-- 官方网站: 
-- API 文档: 
-- 支持的模型: 
+Test results:
+- Basic connectivity: ✅/❌
+- Tool calling: ✅/❌
+- Web integration: ✅/❌
+- E2E: ✅/❌
 
-**测试结果**:
-- 基础连接: ✅/❌
-- 工具调用: ✅/❌ 
-- Web 集成: ✅/❌
-- 端到端: ✅/❌
+Performance metrics:
+- Avg. latency: ___ s
+- Tool success rate: ___%
+- Memory usage: ___ MB
 
-**性能指标**:
-- 平均响应时间: ___ 秒
-- 工具调用成功率: ___%
-- 内存使用: ___ MB
+Known issues:
+<!-- list any known limitations -->
 
-**已知问题**:
-<!-- 列出任何已知的问题或限制 -->
+## How to test
+<!-- Provide test steps -->
+1.
+2.
+3.
 
-## 🧪 测试说明
+## Test environment
+- [ ] Local dev
+- [ ] Docker
+- [ ] Production
 
-### 如何测试此 PR
-<!-- 请提供测试此 PR 的步骤 -->
+## Breaking changes
+- [ ] This PR contains breaking changes
+- [ ] This PR does not contain breaking changes
 
-1. 
-2. 
-3. 
+If breaking, provide migration notes:
+<!-- migration guidance -->
 
-### 测试环境
-- [ ] 本地开发环境
-- [ ] Docker 环境
-- [ ] 生产环境
+## Impacted components
+Mark affected components:
+- [ ] Core trading logic
+- [ ] LLM adapters
+- [ ] Web UI
+- [ ] Data ingestion
+- [ ] Config system
+- [ ] Test framework
+- [ ] Documentation
+- [ ] Deployment
 
-### 破坏性变更
-- [ ] 此 PR 包含破坏性变更
-- [ ] 此 PR 不包含破坏性变更
+## Links
+- Documentation:
+- References:
+- Related PRs:
 
-如果包含破坏性变更，请说明：
-<!-- 描述破坏性变更的影响和迁移指南 -->
+## Screenshots / Demos
+<!-- If UI changes, include screenshots or demo video -->
 
-## 📊 影响范围
+## Checklist
+Code quality:
+- [ ] Follows coding style
+- [ ] No leftover debug code
+- [ ] Clear names and intent
+- [ ] Avoids duplicated logic
 
-请标记此 PR 影响的组件：
+Testing:
+- [ ] New features have tests
+- [ ] All tests pass
+- [ ] Manual test completed
+- [ ] Edge cases considered
 
-- [ ] 核心交易逻辑
-- [ ] LLM 适配器
-- [ ] Web 界面
-- [ ] 数据获取
-- [ ] 配置系统
-- [ ] 测试框架
-- [ ] 文档
-- [ ] 部署配置
+Documentation:
+- [ ] README updated (if needed)
+- [ ] API docs updated (if needed)
+- [ ] Changelog updated (if needed)
+- [ ] Config docs updated (if needed)
 
-## 🔗 相关链接
+Security:
+- [ ] No hard-coded secrets
+- [ ] Input validation in place
+- [ ] Error handling does not leak secrets
+- [ ] Third-party deps are trusted
 
-- 相关文档: 
-- 参考资料: 
-- 相关 PR: 
+Performance:
+- [ ] No major perf regressions
+- [ ] Memory usage reasonable
+- [ ] Network requests optimized
+- [ ] DB queries optimized (if applicable)
 
-## 📷 截图/演示
+## Suggested labels
+- [ ] enhancement
+- [ ] bug
+- [ ] documentation
+- [ ] refactor
+- [ ] performance
+- [ ] security
+- [ ] llm-adapter
+- [ ] ui/ux
+- [ ] config
+- [ ] testing
 
-<!-- 如果涉及 UI 变更，请提供截图或演示视频 -->
+## Reviewers
+Suggested reviewers:
+<!-- @mention reviewers -->
 
-## ✅ 检查清单
-
-请确认以下项目：
-
-### 代码质量
-- [ ] 代码遵循项目的编码规范
-- [ ] 没有不必要的调试代码或注释
-- [ ] 变量和函数命名清晰明确
-- [ ] 代码复用性良好，避免重复代码
-
-### 测试覆盖
-- [ ] 新功能有相应的测试用例
-- [ ] 所有测试通过
-- [ ] 手动测试已完成
-- [ ] 边界情况已考虑
-
-### 文档更新
-- [ ] README 已更新（如果需要）
-- [ ] API 文档已更新（如果需要）
-- [ ] 变更日志已更新（如果需要）
-- [ ] 配置文档已更新（如果需要）
-
-### 安全考虑
-- [ ] 没有硬编码的密钥或敏感信息
-- [ ] 输入验证充分
-- [ ] 错误处理不泄露敏感信息
-- [ ] 第三方依赖安全可靠
-
-### 性能考虑
-- [ ] 新功能不会显著影响性能
-- [ ] 内存使用合理
-- [ ] 网络请求优化
-- [ ] 数据库查询优化（如果适用）
-
-## 🏷️ 标签建议
-
-请为此 PR 建议适当的标签：
-
-- [ ] `enhancement` - 新功能或改进
-- [ ] `bug` - Bug 修复
-- [ ] `documentation` - 文档相关
-- [ ] `refactor` - 代码重构
-- [ ] `performance` - 性能优化
-- [ ] `security` - 安全相关
-- [ ] `llm-adapter` - LLM 适配器
-- [ ] `ui/ux` - 用户界面/体验
-- [ ] `config` - 配置相关
-- [ ] `testing` - 测试相关
-
-## 👥 审查者
-
-建议的审查者：
-<!-- @mention 建议的审查者 -->
-
-## 📝 额外说明
-
-<!-- 任何其他需要审查者知道的信息 -->
+## Additional notes
+<!-- Anything else reviewers should know -->
 
 ---
 
-**感谢您的贡献！** 🎉
+Thank you for your contribution! 🎉
 
-请确保您已经阅读并遵循了我们的 [贡献指南](../docs/LLM_INTEGRATION_GUIDE.md)。如果您有任何问题，请随时在 PR 中提问或联系维护者。
+Please ensure you followed the LLM integration guide: ../docs/LLM_INTEGRATION_GUIDE.md

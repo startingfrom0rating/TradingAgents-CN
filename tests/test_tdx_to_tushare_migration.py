@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-TDX到Tushare迁移测试
-验证TDX接口已成功替换为Tushare统一接口
+TDX to Tushare migration tests
+Validate that TDX interfaces have been successfully replaced by the unified Tushare interfaces
 """
 
 import os
@@ -14,45 +14,45 @@ sys.path.insert(0, project_root)
 
 
 def test_data_source_manager():
-    """测试数据源管理器"""
-    print("\n🔧 测试数据源管理器")
+    """Test the data source manager"""
+    print("\n🔧 Testing data source manager")
     print("=" * 60)
-    
+
     try:
         from tradingagents.dataflows.data_source_manager import get_data_source_manager, ChinaDataSource
-        
-        print("✅ 数据源管理器导入成功")
-        
-        # 创建管理器实例
+
+        print("✅ Data source manager imported successfully")
+
+        # Create manager instance
         manager = get_data_source_manager()
-        
-        print(f"✅ 数据源管理器初始化成功")
-        print(f"   当前数据源: {manager.get_current_source().value}")
-        print(f"   可用数据源: {[s.value for s in manager.available_sources]}")
-        
-        # 测试数据源切换
+
+        print(f"✅ Data source manager initialized successfully")
+        print(f"   Current data source: {manager.get_current_source().value}")
+        print(f"   Available data sources: {[s.value for s in manager.available_sources]}")
+
+        # Test switching data source
         if ChinaDataSource.TUSHARE in manager.available_sources:
-            print("🔄 测试切换到Tushare...")
+            print("🔄 Testing switch to Tushare...")
             success = manager.set_current_source(ChinaDataSource.TUSHARE)
             if success:
-                print("✅ 成功切换到Tushare")
+                print("✅ Successfully switched to Tushare")
             else:
-                print("❌ 切换到Tushare失败")
-        
+                print("❌ Failed to switch to Tushare")
+
         return True
-        
+
     except Exception as e:
-        print(f"❌ 数据源管理器测试失败: {e}")
+        print(f"❌ Data source manager test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 
 def test_unified_interfaces():
-    """测试统一接口"""
-    print("\n🔧 测试统一接口")
+    """Test unified interfaces"""
+    print("\n🔧 Testing unified interfaces")
     print("=" * 60)
-    
+
     try:
         from tradingagents.dataflows.interface import (
             get_china_stock_data_unified,
@@ -60,194 +60,194 @@ def test_unified_interfaces():
             switch_china_data_source,
             get_current_china_data_source
         )
-        
-        print("✅ 统一接口导入成功")
-        
-        # 测试获取当前数据源
-        print("🔄 测试获取当前数据源...")
+
+        print("✅ Unified interfaces imported successfully")
+
+        # Test get current data source
+        print("🔄 Testing retrieval of current data source...")
         current_source = get_current_china_data_source()
-        print(f"✅ 当前数据源信息:\n{current_source}")
-        
-        # 测试切换数据源
-        print("🔄 测试切换数据源到Tushare...")
+        print(f"✅ Current data source info:\n{current_source}")
+
+        # Test switching data source
+        print("🔄 Testing switch of data source to Tushare...")
         switch_result = switch_china_data_source("tushare")
-        print(f"✅ 切换结果: {switch_result}")
-        
-        # 测试获取股票信息
-        print("🔄 测试获取股票信息...")
+        print(f"✅ Switch result: {switch_result}")
+
+        # Test fetching stock info
+        print("🔄 Testing fetching stock info...")
         stock_info = get_china_stock_info_unified("000001")
         if "股票代码: 000001" in stock_info:
-            print("✅ 股票信息获取成功")
-            print(f"📊 股票信息: {stock_info[:200]}...")
+            print("✅ Stock info retrieved successfully")
+            print(f"📊 Stock info: {stock_info[:200]}...")
         else:
-            print("❌ 股票信息获取失败")
-        
-        # 测试获取股票数据
-        print("🔄 测试获取股票数据...")
+            print("❌ Failed to retrieve stock info")
+
+        # Test fetching stock data
+        print("🔄 Testing fetching stock data...")
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')
-        
+
         stock_data = get_china_stock_data_unified("000001", start_date, end_date)
         if "股票代码: 000001" in stock_data:
-            print("✅ 股票数据获取成功")
-            print(f"📊 数据长度: {len(stock_data)}字符")
+            print("✅ Stock data retrieved successfully")
+            print(f"📊 Data length: {len(stock_data)} chars")
         else:
-            print("❌ 股票数据获取失败")
-        
+            print("❌ Failed to retrieve stock data")
+
         return True
-        
+
     except Exception as e:
-        print(f"❌ 统一接口测试失败: {e}")
+        print(f"❌ Unified interface test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 
 def test_agent_utils_migration():
-    """测试agent_utils的迁移"""
-    print("\n🔧 测试agent_utils迁移")
+    """Test migration of agent_utils"""
+    print("\n🔧 Testing agent_utils migration")
     print("=" * 60)
-    
+
     try:
         from tradingagents.agents.utils.agent_utils import AgentUtils
 
-        print("✅ agent_utils导入成功")
+        print("✅ agent_utils imported successfully")
 
-        # 测试基本面数据获取
-        print("🔄 测试基本面数据获取...")
+        # Test fetching fundamentals
+        print("🔄 Testing fetching fundamentals...")
         curr_date = datetime.now().strftime('%Y-%m-%d')
 
-        # 使用AgentUtils类的静态方法
+        # Use the AgentUtils class static method
         fundamentals = AgentUtils.get_fundamentals_openai("000001", curr_date)
-        
+
         if fundamentals and len(fundamentals) > 100:
-            print("✅ 基本面数据获取成功")
-            print(f"📊 数据长度: {len(fundamentals)}字符")
-            
-            # 检查是否还包含TDX相关信息
+            print("✅ Fundamentals retrieved successfully")
+            print(f"📊 Data length: {len(fundamentals)} chars")
+
+            # Check whether TDX-related strings are still present
             if "通达信" in fundamentals:
-                print("⚠️ 警告: 基本面数据中仍包含通达信相关信息")
+                print("⚠️ Warning: Fundamentals still contain TDX-related references")
             else:
-                print("✅ 基本面数据已成功迁移到新数据源")
+                print("✅ Fundamentals successfully migrated to the new data source")
         else:
-            print("❌ 基本面数据获取失败")
-        
+            print("❌ Failed to retrieve fundamentals")
+
         return True
-        
+
     except Exception as e:
-        print(f"❌ agent_utils迁移测试失败: {e}")
+        print(f"❌ agent_utils migration test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 
 def test_optimized_china_data_migration():
-    """测试optimized_china_data的迁移"""
-    print("\n🔧 测试optimized_china_data迁移")
+    """Test migration of optimized_china_data"""
+    print("\n🔧 Testing optimized_china_data migration")
     print("=" * 60)
-    
+
     try:
         from tradingagents.dataflows.optimized_china_data import OptimizedChinaDataProvider
-        
-        print("✅ optimized_china_data导入成功")
-        
-        # 创建提供器实例
+
+        print("✅ optimized_china_data imported successfully")
+
+        # Create provider instance
         provider = OptimizedChinaDataProvider()
-        
-        # 测试数据获取
-        print("🔄 测试数据获取...")
+
+        # Test data retrieval
+        print("🔄 Testing data retrieval...")
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')
-        
+
         data = provider.get_stock_data("000001", start_date, end_date)
-        
+
         if data and len(data) > 100:
-            print("✅ 数据获取成功")
-            print(f"📊 数据长度: {len(data)}字符")
-            
-            # 检查是否还包含TDX相关信息
+            print("✅ Data retrieved successfully")
+            print(f"📊 Data length: {len(data)} chars")
+
+            # Check whether TDX-related strings are still present
             if "通达信" in data:
-                print("⚠️ 警告: 数据中仍包含通达信相关信息")
+                print("⚠️ Warning: Data still contains TDX-related references")
             else:
-                print("✅ 数据获取已成功迁移到新数据源")
+                print("✅ Data retrieval successfully migrated to the new data source")
         else:
-            print("❌ 数据获取失败")
-        
+            print("❌ Failed to retrieve data")
+
         return True
-        
+
     except Exception as e:
-        print(f"❌ optimized_china_data迁移测试失败: {e}")
+        print(f"❌ optimized_china_data migration test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 
 def test_tdx_deprecation_warnings():
-    """测试TDX弃用警告"""
-    print("\n🔧 测试TDX弃用警告")
+    """Test TDX deprecation warnings"""
+    print("\n🔧 Testing TDX deprecation warnings")
     print("=" * 60)
-    
+
     try:
         from tradingagents.dataflows.data_source_manager import get_data_source_manager, ChinaDataSource
-        
+
         manager = get_data_source_manager()
-        
-        # 如果TDX可用，测试弃用警告
+
+        # If TDX is available, test deprecation warnings
         if ChinaDataSource.TDX in manager.available_sources:
-            print("🔄 测试TDX弃用警告...")
-            
-            # 切换到TDX
+            print("🔄 Testing TDX deprecation warnings...")
+
+            # Switch to TDX
             manager.set_current_source(ChinaDataSource.TDX)
-            
-            # 获取数据（应该显示弃用警告）
+
+            # Fetch data (should show deprecation warning)
             end_date = datetime.now().strftime('%Y-%m-%d')
             start_date = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d')
-            
+
             data = manager.get_stock_data("000001", start_date, end_date)
-            
+
             if data:
-                print("✅ TDX数据获取成功（带弃用警告）")
+                print("✅ TDX data retrieved successfully (deprecation warning expected)")
             else:
-                print("❌ TDX数据获取失败")
-            
-            # 切换回Tushare
+                print("❌ Failed to retrieve TDX data")
+
+            # Switch back to Tushare
             if ChinaDataSource.TUSHARE in manager.available_sources:
                 manager.set_current_source(ChinaDataSource.TUSHARE)
-                print("✅ 已切换回Tushare数据源")
+                print("✅ Switched back to Tushare data source")
         else:
-            print("ℹ️ TDX数据源不可用，跳过弃用警告测试")
-        
+            print("ℹ️ TDX data source not available, skipping deprecation warning test")
+
         return True
-        
+
     except Exception as e:
-        print(f"❌ TDX弃用警告测试失败: {e}")
+        print(f"❌ TDX deprecation warning test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 
 def check_migration_completeness():
-    """检查迁移完整性"""
-    print("\n🔧 检查迁移完整性")
+    """Check migration completeness"""
+    print("\n🔧 Checking migration completeness")
     print("=" * 60)
-    
-    # 检查环境变量
+
+    # Check environment variables
     tushare_token = os.getenv('TUSHARE_TOKEN')
     default_source = os.getenv('DEFAULT_CHINA_DATA_SOURCE', 'tushare')
-    
-    print(f"📊 环境变量检查:")
-    print(f"   TUSHARE_TOKEN: {'已设置' if tushare_token else '未设置'}")
+
+    print(f"📊 Environment variable check:")
+    print(f"   TUSHARE_TOKEN: {'set' if tushare_token else 'not set'}")
     print(f"   DEFAULT_CHINA_DATA_SOURCE: {default_source}")
-    
-    # 检查Tushare库
+
+    # Check Tushare library
     try:
         import tushare as ts
-        print(f"✅ Tushare库: v{ts.__version__}")
+        print(f"✅ Tushare library: v{ts.__version__}")
     except ImportError:
-        print("❌ Tushare库未安装")
+        print("❌ Tushare library is not installed")
         return False
-    
-    # 检查统一接口可用性
+
+    # Check unified interface availability
     try:
         from tradingagents.dataflows import (
             get_china_stock_data_unified,
@@ -255,11 +255,11 @@ def check_migration_completeness():
             switch_china_data_source,
             get_current_china_data_source
         )
-        print("✅ 统一接口可用")
+        print("✅ Unified interfaces available")
     except ImportError as e:
-        print(f"❌ 统一接口不可用: {e}")
+        print(f"❌ Unified interfaces not available: {e}")
         return False
-    
+
     return True
 
 

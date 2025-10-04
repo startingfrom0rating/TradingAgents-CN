@@ -1,8 +1,8 @@
 """
-LLM 适配器模板 - 适用于 OpenAI 兼容提供商
+LLM adapter template - suited for OpenAI-compatible providers
 
-使用方式：复制本文件为 tradingagents/llm_adapters/{provider}_adapter.py，
-并根据目标提供商修改 provider_name、base_url、API Key 环境变量等信息。
+Usage: copy this file into tradingagents/llm_adapters/{provider}_adapter.py
+and customize provider_name, base_url, API key environment variable, and any provider-specific defaults.
 """
 
 from typing import Any, Dict
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class ChatProviderTemplate(OpenAICompatibleBase):
-    """{ProviderDisplayName} OpenAI 兼容适配器"""
+    """{ProviderDisplayName} OpenAI-compatible adapter"""
 
     def __init__(
         self,
@@ -25,7 +25,15 @@ class ChatProviderTemplate(OpenAICompatibleBase):
         timeout: int = 120,
         **kwargs: Any,
     ) -> None:
-        """初始化 {ProviderDisplayName} OpenAI 兼容客户端"""
+        """
+        Initialize the {ProviderDisplayName} OpenAI-compatible client.
+
+        Parameters:
+        - model: default model name
+        - temperature: sampling temperature
+        - max_tokens: model max tokens
+        - timeout: request timeout in seconds
+        """
         super().__init__(
             provider_name="{provider}",
             model=model,
@@ -36,10 +44,10 @@ class ChatProviderTemplate(OpenAICompatibleBase):
             request_timeout=timeout,
             **kwargs,
         )
-        logger.info("✅ {ProviderDisplayName} OpenAI 兼容适配器初始化成功")
+        logger.info("✅ {ProviderDisplayName} OpenAI-compatible adapter initialized successfully")
 
 
-# 供 openai_compatible_base.py 注册参考
+# Reference for openai_compatible_base.py
 PROVIDER_TEMPLATE_MODELS: Dict[str, Dict[str, Any]] = {
     "{default-model-name}": {"context_length": 8192, "supports_function_calling": True},
     "{advanced-model-name}": {"context_length": 32768, "supports_function_calling": True},
